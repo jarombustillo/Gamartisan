@@ -6,52 +6,36 @@ use Illuminate\Database\Eloquent\Model;
 
 class Review extends Model
 {
-    /**
-     * The table associated with the model.
-     */
-    protected $table = 'REVIEWS';
-
-    /**
-     * The primary key associated with the table.
-     */
+    protected $table = 'reviews';
     protected $primaryKey = 'reviewID';
-
-    /**
-     * Indicates if the model should be timestamped.
-     */
     public $timestamps = false;
 
-    /**
-     * The attributes that are mass assignable.
-     */
     protected $fillable = [
-        'buyerID',
         'productID',
+        'buyerID',
+        'orderID',
         'revRating',
         'revText',
         'datePosted',
     ];
 
-    /**
-     * The attributes that should be cast.
-     */
     protected $casts = [
         'datePosted' => 'datetime',
+        'revRating' => 'integer',
     ];
 
-    /**
-     * Get the buyer who wrote the review.
-     */
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'productID', 'productID');
+    }
+
     public function buyer()
     {
         return $this->belongsTo(Buyer::class, 'buyerID', 'buyerID');
     }
 
-    /**
-     * Get the product being reviewed.
-     */
-    public function product()
+    public function order()
     {
-        return $this->belongsTo(Product::class, 'productID', 'productID');
+        return $this->belongsTo(Order::class, 'orderID', 'orderID');
     }
 }

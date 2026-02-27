@@ -7,6 +7,9 @@ use App\Models\Artist;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Admin;
+use App\Models\Notification;
+use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -29,7 +32,7 @@ class ArtistDashboardController extends Controller
         
         $stats = [
             'total_products' => $artist->products()->count(),
-            'total_sales' => $artist->orders()->sum('ordTotalPrice'),
+            'total_sales' => $artist->orders()->sum('sellerAmount'),
             'total_orders' => $artist->orders()->count(),
             'pending_orders' => $artist->orders()->where('ordStatus', 'pending')->count(),
         ];
@@ -215,7 +218,20 @@ class ArtistDashboardController extends Controller
 
         $order->update($validated);
 
-        return back()->with('success', 'Order status updated!');
+    // Notify buyer about status change
+    Notification::send('order', "Your order #{$order->orderID} status changed to " . ucfirst($validated['ordStatus']), [
+        'buyerID' => $order->buyerID,
+    ]);
+
+    // Notify all admins
+    $adminIds = Admin::pluck('adminID')->toArray();
+    if (!empty($adminIds)) {
+        Notification::send('order', "Order #{$order->orderID} status changed to " . ucfirst($validated['ordStatus']) . " by artist", [
+            'adminID' => $adminIds,
+        ]);
+    }
+
+    return back()->with('success', 'Order status updated!');
     }
 
     /**
@@ -286,5 +302,18 @@ class ArtistDashboardController extends Controller
         $orders = $query->orderBy('orderDate', 'desc')->paginate(10);
 
         return view('artist.transactions', compact('artist', 'orders'));
+    }
+
+    /**
+     * View reviews on artist's products.
+     */
+    public function reviews()
+    {
+        $artist = $this->getArtist();
+        $reviews = Review::whereHas('product', function ($q) use ($artist) {
+            $q->where('artistID', $artist->artistID);
+        })->with(['product', 'buyer'])->orderBy('datePosted', 'desc')->paginate(15);
+
+        return view('artist.reviews', compact('artist', 'reviews'));
     }
 }

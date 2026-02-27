@@ -107,19 +107,36 @@
                                 <span class="text-gray-600">Subtotal</span>
                                 <span id="subtotal" class="font-medium text-gray-800">₱{{ number_format($product->prodPrice, 2) }}</span>
                             </div>
+                            <div class="border-t border-gray-100 pt-3">
+                                <p class="text-xs text-gray-400 mb-2 uppercase tracking-wider">Revenue Breakdown</p>
+                            </div>
+                            <div class="flex justify-between text-green-600">
+                                <span class="flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"></path></svg>
+                                    Seller Payout (85%)
+                                </span>
+                                <span id="sellerPayout" class="font-medium">₱{{ number_format($product->prodPrice * 0.85, 2) }}</span>
+                            </div>
                             <div class="flex justify-between text-pink-600">
                                 <span class="flex items-center gap-1">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
-                                    10% Charity Donation
+                                    Charity Donation (10%)
                                 </span>
                                 <span id="donation" class="font-medium">₱{{ number_format($product->prodPrice * 0.10, 2) }}</span>
+                            </div>
+                            <div class="flex justify-between text-indigo-600">
+                                <span class="flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                                    Platform Fee (5%)
+                                </span>
+                                <span id="platformFee" class="font-medium">₱{{ number_format($product->prodPrice * 0.05, 2) }}</span>
                             </div>
                             <div class="border-t border-gray-200 pt-3 flex justify-between">
                                 <span class="font-semibold text-gray-800">Total</span>
                                 <span id="total" class="font-bold text-xl text-forest">₱{{ number_format($product->prodPrice, 2) }}</span>
                             </div>
                         </div>
-                        <p class="text-xs text-gray-400 mt-3">* The charity donation is included in the total price.</p>
+                        <p class="text-xs text-gray-400 mt-3">* The charity donation and platform fee are included in the total price.</p>
 
                         <button type="submit" class="w-full mt-6 bg-forest text-white py-3 rounded-xl font-semibold hover:bg-forest-dark transition-colors shadow-lg">
                             Place Order
@@ -142,11 +159,17 @@
     function updateTotal() {
         const qty = parseInt(document.getElementById('ordQuantity').value) || 1;
         const subtotal = unitPrice * qty;
+        const sellerPayout = subtotal * 0.85;
         const donation = subtotal * 0.10;
+        const platformFee = subtotal * 0.05;
 
-        document.getElementById('subtotal').textContent = '₱' + subtotal.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        document.getElementById('donation').textContent = '₱' + donation.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        document.getElementById('total').textContent = '₱' + subtotal.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        const fmt = (val) => '₱' + val.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+        document.getElementById('subtotal').textContent = fmt(subtotal);
+        document.getElementById('sellerPayout').textContent = fmt(sellerPayout);
+        document.getElementById('donation').textContent = fmt(donation);
+        document.getElementById('platformFee').textContent = fmt(platformFee);
+        document.getElementById('total').textContent = fmt(subtotal);
     }
 </script>
 @endpush

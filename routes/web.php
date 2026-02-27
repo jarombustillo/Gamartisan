@@ -12,6 +12,9 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CharityController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
 
 
 /*
@@ -32,9 +35,19 @@ Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/products/{product}', [HomeController::class, 'showProduct'])->name('products.show');
 
 // Checkout Routes (Buyer or Artist)
+use App\Http\Controllers\CartController;
+
 Route::middleware('user.auth')->group(function () {
     Route::get('/checkout/{product}', [CheckoutController::class, 'show'])->name('checkout');
     Route::post('/checkout/{product}', [CheckoutController::class, 'store'])->name('checkout.store');
+    Route::post('/products/{product}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+
+    // Cart
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/add/{product}', [CartController::class, 'add'])->name('cart.add');
+    Route::put('/cart/{cartItem}', [CartController::class, 'update'])->name('cart.update');
+    Route::delete('/cart/{cartItem}', [CartController::class, 'remove'])->name('cart.remove');
+    Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
 });
 
 
@@ -78,7 +91,20 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Charity Donation Reports
         Route::get('charities-summary', [CharityController::class, 'donationSummary'])->name('charities.summary');
-        Route::get('charities-reports', [CharityController::class, 'impactReports'])->name('charities.reports');
+
+        // Report Generation
+        Route::get('reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/sales', [\App\Http\Controllers\Admin\ReportController::class, 'sales'])->name('reports.sales');
+        Route::get('reports/donations', [\App\Http\Controllers\Admin\ReportController::class, 'donations'])->name('reports.donations');
+        Route::get('reports/artist-performance', [\App\Http\Controllers\Admin\ReportController::class, 'artistPerformance'])->name('reports.artist-performance');
+
+        // Notifications
+        Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+        Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.readAll');
+
+        // Reviews
+        Route::get('reviews', [AdminReviewController::class, 'index'])->name('reviews.index');
+        Route::delete('reviews/{review}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');
     });
 });
 
@@ -92,6 +118,10 @@ Route::prefix('buyer')->name('buyer.')->middleware('user.auth:buyer')->group(fun
     Route::put('/profile', [BuyerDashboardController::class, 'updateProfile'])->name('profile.update');
     Route::put('/password', [BuyerDashboardController::class, 'updatePassword'])->name('password.update');
     Route::get('/transactions', [BuyerDashboardController::class, 'transactions'])->name('transactions');
+
+    // Notifications
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.readAll');
 });
 
 // Artist Dashboard Routes
@@ -111,4 +141,10 @@ Route::prefix('artist')->name('artist.')->middleware('user.auth:artist')->group(
     Route::put('/profile', [ArtistDashboardController::class, 'updateProfile'])->name('profile.update');
     Route::put('/password', [ArtistDashboardController::class, 'updatePassword'])->name('password.update');
     Route::get('/transactions', [ArtistDashboardController::class, 'transactions'])->name('transactions');
+    Route::get('/reviews', [ArtistDashboardController::class, 'reviews'])->name('reviews');
+
+    // Notifications
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.readAll');
 });
+

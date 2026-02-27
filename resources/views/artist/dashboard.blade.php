@@ -22,7 +22,7 @@
         <div class="bg-white rounded-xl shadow-sm p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-500">Total Sales</p>
+                    <p class="text-sm text-gray-500">Total Earnings</p>
                     <p class="text-3xl font-bold text-gray-800">₱{{ number_format($stats['total_sales'], 2) }}</p>
                 </div>
                 <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
@@ -72,7 +72,7 @@
                             <p class="text-sm text-gray-500">{{ $order->buyer->fullName ?? 'N/A' }}</p>
                         </div>
                         <div class="text-right">
-                            <p class="font-medium text-gray-800">₱{{ number_format($order->ordTotalPrice, 2) }}</p>
+                            <p class="font-medium text-gray-800">₱{{ number_format($order->sellerAmount, 2) }}</p>
                             @php
                                 $statusColors = [
                                     'pending' => 'bg-yellow-100 text-yellow-700',

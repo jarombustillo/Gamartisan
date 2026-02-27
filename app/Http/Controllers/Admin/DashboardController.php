@@ -34,6 +34,7 @@ class DashboardController extends Controller
             'total_charities' => Charity::count(),
             'pending_orders' => Order::where('ordStatus', 'pending')->count(),
             'total_donations' => Donation::sum('amountDonated') ?? 0,
+            'platform_earnings' => Order::sum('platformFee') ?? 0,
         ];
 
         // Recent orders

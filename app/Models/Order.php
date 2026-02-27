@@ -30,6 +30,8 @@ class Order extends Model
         'productID',
         'ordQuantity',
         'ordTotalPrice',
+        'sellerAmount',
+        'platformFee',
         'orderDate',
         'ordStatus',
     ];
@@ -39,6 +41,8 @@ class Order extends Model
      */
     protected $casts = [
         'ordTotalPrice' => 'decimal:2',
+        'sellerAmount' => 'decimal:2',
+        'platformFee' => 'decimal:2',
         'orderDate' => 'datetime',
     ];
 

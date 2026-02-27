@@ -26,7 +26,9 @@
         <div class="w-full max-w-md">
             <!-- Logo -->
             <div class="flex justify-center mb-8">
-                <a href="{{ route('home') }}" class="text-3xl font-display font-bold text-forest">Gamartisan</a>
+                <a href="{{ route('home') }}">
+                    <img src="{{ asset('uploads/logo.png') }}" alt="Gamartisan" class="h-16 object-contain">
+                </a>
             </div>
 
             <h2 class="text-2xl font-bold text-center text-gray-900 mb-8">Welcome Back</h2>

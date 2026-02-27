@@ -133,6 +133,29 @@
                 @endif
             </div>
 
+            <!-- Revenue Breakdown -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Revenue Breakdown</h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Total Price</span>
+                        <span class="font-medium text-gray-800">₱{{ number_format($order->ordTotalPrice, 2) }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Seller Payout (85%)</span>
+                        <span class="font-medium text-green-700">₱{{ number_format($order->sellerAmount, 2) }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Charity Donation (10%)</span>
+                        <span class="font-medium text-pink-600">₱{{ number_format($order->donation->amountDonated ?? 0, 2) }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Platform Fee (5%)</span>
+                        <span class="font-medium text-indigo-600">₱{{ number_format($order->platformFee, 2) }}</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Donation -->
             @if($order->donation)
                 <div class="bg-white rounded-xl shadow-sm p-6">

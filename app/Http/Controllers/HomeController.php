@@ -74,7 +74,30 @@ class HomeController extends Controller
     public function showProduct(Product $product)
     {
         $product->load(['artist', 'category']);
-        return view('products.show', compact('product'));
+        $reviews = \App\Models\Review::where('productID', $product->productID)
+            ->with('buyer')
+            ->orderBy('datePosted', 'desc')
+            ->get();
+
+        $avgRating = $reviews->avg('revRating');
+        $reviewCount = $reviews->count();
+
+        // Check if logged-in buyer/artist has delivered orders they can review
+        $reviewableOrders = collect();
+        if (in_array(session('user_type'), ['buyer', 'artist'])) {
+            $userID = session('user_id');
+            $reviewedOrderIDs = \App\Models\Review::where('buyerID', $userID)
+                ->where('productID', $product->productID)
+                ->pluck('orderID');
+
+            $reviewableOrders = \App\Models\Order::where('buyerID', $userID)
+                ->where('productID', $product->productID)
+                ->where('ordStatus', 'delivered')
+                ->whereNotIn('orderID', $reviewedOrderIDs)
+                ->get();
+        }
+
+        return view('products.show', compact('product', 'reviews', 'avgRating', 'reviewCount', 'reviewableOrders'));
     }
 
     /**

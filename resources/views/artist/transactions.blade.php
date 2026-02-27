@@ -30,7 +30,9 @@
                         <th class="px-6 py-4">Order ID</th>
                         <th class="px-6 py-4">Buyer</th>
                         <th class="px-6 py-4">Product</th>
-                        <th class="px-6 py-4">Amount</th>
+                        <th class="px-6 py-4">Total</th>
+                        <th class="px-6 py-4">Your Earnings</th>
+                        <th class="px-6 py-4">Platform Fee</th>
                         <th class="px-6 py-4">Method</th>
                         <th class="px-6 py-4">Pay Status</th>
                         <th class="px-6 py-4">Donation</th>
@@ -43,7 +45,9 @@
                             <td class="px-6 py-4 text-sm font-medium text-gray-800">#{{ $order->orderID }}</td>
                             <td class="px-6 py-4 text-sm text-gray-600">{{ $order->buyer->fullName ?? 'N/A' }}</td>
                             <td class="px-6 py-4 text-sm text-gray-600">{{ $order->product->prodName ?? 'N/A' }}</td>
-                            <td class="px-6 py-4 text-sm font-medium text-gray-800">₱{{ number_format($order->ordTotalPrice, 2) }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-600">₱{{ number_format($order->ordTotalPrice, 2) }}</td>
+                            <td class="px-6 py-4 text-sm font-medium text-green-700">₱{{ number_format($order->sellerAmount, 2) }}</td>
+                            <td class="px-6 py-4 text-sm text-indigo-600">₱{{ number_format($order->platformFee, 2) }}</td>
                             <td class="px-6 py-4 text-sm text-gray-600">{{ $order->payment->payMethod ?? 'N/A' }}</td>
                             <td class="px-6 py-4">
                                 @if($order->payment)
@@ -66,7 +70,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                            <td colspan="10" class="px-6 py-12 text-center text-gray-500">
                                 <svg class="w-12 h-12 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
                                 <p>No transaction records yet</p>
                             </td>

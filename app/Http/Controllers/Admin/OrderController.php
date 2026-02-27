@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -64,6 +65,16 @@ class OrderController extends Controller
         ]);
 
         $order->update($validated);
+
+        // Notify buyer
+        Notification::send('order', "Your order #{$order->orderID} status changed to " . ucfirst($validated['ordStatus']), [
+            'buyerID' => $order->buyerID,
+        ]);
+
+        // Notify artist
+        Notification::send('order', "Order #{$order->orderID} status changed to " . ucfirst($validated['ordStatus']) . " by admin", [
+            'artistID' => $order->artistID,
+        ]);
 
         return redirect()->route('admin.orders.show', $order)
             ->with('success', 'Order status updated successfully.');

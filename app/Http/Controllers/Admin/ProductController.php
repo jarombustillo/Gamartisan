@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Artist;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -104,7 +105,15 @@ class ProductController extends Controller
             'prodStatus' => 'required|in:available,unavailable',
         ]);
 
+        $oldStatus = $product->prodStatus;
         $product->update($validated);
+
+        // Notify artist if product status changed
+        if ($oldStatus !== $validated['prodStatus']) {
+            Notification::send('product', "Your product '{$product->prodName}' status changed to " . ucfirst($validated['prodStatus']), [
+                'artistID' => $product->artistID,
+            ]);
+        }
 
         return redirect()->route('admin.products.index')
             ->with('success', 'Product updated successfully.');

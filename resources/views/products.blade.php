@@ -93,20 +93,22 @@
                 @else
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         @foreach($products as $product)
-                            <a href="{{ route('products.show', $product) }}" class="product-card bg-white rounded-xl shadow-sm overflow-hidden group cursor-pointer block">
-                                @if($product->prodImage)
-                                    <div class="relative overflow-hidden">
-                                        <img src="{{ asset($product->prodImage) }}" alt="{{ $product->prodName }}" 
-                                            class="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300">
-                                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
-                                    </div>
-                                @else
-                                    <div class="w-full h-56 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                                        <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                        </svg>
-                                    </div>
-                                @endif
+                            <div class="product-card bg-white rounded-xl shadow-sm overflow-hidden group">
+                                <a href="{{ route('products.show', $product) }}" class="block">
+                                    @if($product->prodImage)
+                                        <div class="relative overflow-hidden">
+                                            <img src="{{ asset($product->prodImage) }}" alt="{{ $product->prodName }}" 
+                                                class="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300">
+                                            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+                                        </div>
+                                    @else
+                                        <div class="w-full h-56 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                                            <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </div>
+                                    @endif
+                                </a>
                                 
                                 <div class="p-5">
                                     <div class="flex items-start justify-between mb-2">
@@ -114,26 +116,30 @@
                                             {{ $product->category->catName ?? 'Uncategorized' }}
                                         </span>
                                     </div>
-                                    <h3 class="font-semibold text-gray-800 mb-1 group-hover:text-forest transition-colors">
-                                        {{ $product->prodName }}
-                                    </h3>
+                                    <a href="{{ route('products.show', $product) }}">
+                                        <h3 class="font-semibold text-gray-800 mb-1 group-hover:text-forest transition-colors">
+                                            {{ $product->prodName }}
+                                        </h3>
+                                    </a>
                                     <p class="text-sm text-gray-500 mb-3">
                                         by {{ $product->artist->fullName ?? 'Unknown Artist' }}
                                     </p>
                                     <div class="flex items-center justify-between">
                                         <span class="text-xl font-bold text-forest">₱{{ number_format($product->prodPrice, 2) }}</span>
-                                        @if(session('user_type') === 'buyer')
-                                            <span class="px-4 py-2 bg-forest text-white text-sm rounded-lg hover:bg-forest-dark transition-colors">
-                                                Buy Now
-                                            </span>
+                                        @if(session('user_type') === 'buyer' || session('user_type') === 'artist')
+                                            <button type="button" class="add-to-cart-btn px-4 py-2 bg-forest text-white text-sm rounded-lg hover:bg-forest-dark transition-colors flex items-center gap-1"
+                                                data-url="{{ route('cart.add', $product) }}" data-token="{{ csrf_token() }}">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"></path></svg>
+                                                Add
+                                            </button>
                                         @else
-                                            <span class="px-4 py-2 border border-forest text-forest text-sm rounded-lg hover:bg-forest hover:text-white transition-colors">
+                                            <a href="{{ route('products.show', $product) }}" class="px-4 py-2 border border-forest text-forest text-sm rounded-lg hover:bg-forest hover:text-white transition-colors">
                                                 View Details
-                                            </span>
+                                            </a>
                                         @endif
                                     </div>
                                 </div>
-                            </a>
+                            </div>
                         @endforeach
                     </div>
 
@@ -148,4 +154,82 @@
         </div>
     </div>
 </div>
+
+<!-- Toast notification -->
+<div id="cart-toast" class="fixed bottom-6 right-6 bg-forest text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3 transform translate-y-20 opacity-0 transition-all duration-300 z-50" style="pointer-events: none;">
+    <svg class="w-5 h-5 text-green-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+    <span id="cart-toast-msg">Added to cart!</span>
+</div>
+
+<script>
+document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const url = this.dataset.url;
+        const token = this.dataset.token;
+        const button = this;
+
+        // Disable button briefly
+        button.disabled = true;
+        button.style.opacity = '0.6';
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': token,
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Update cart badge
+                document.querySelectorAll('.cart-badge').forEach(badge => {
+                    badge.textContent = data.cartCount;
+                    badge.classList.remove('hidden');
+                });
+                // Also update any badge that was hidden
+                const cartLink = document.querySelector('a[href*="/cart"]');
+                if (cartLink) {
+                    let badge = cartLink.querySelector('.cart-badge');
+                    if (!badge) {
+                        badge = document.createElement('span');
+                        badge.className = 'cart-badge absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold';
+                        cartLink.appendChild(badge);
+                    }
+                    badge.textContent = data.cartCount;
+                    badge.classList.remove('hidden');
+                }
+
+                // Show toast
+                const toast = document.getElementById('cart-toast');
+                document.getElementById('cart-toast-msg').textContent = data.message;
+                toast.style.transform = 'translateY(0)';
+                toast.style.opacity = '1';
+                setTimeout(() => {
+                    toast.style.transform = 'translateY(20px)';
+                    toast.style.opacity = '0';
+                }, 2500);
+            }
+        })
+        .catch(() => {
+            // Fallback: submit as form
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = url;
+            form.innerHTML = `<input type="hidden" name="_token" value="${token}">`;
+            document.body.appendChild(form);
+            form.submit();
+        })
+        .finally(() => {
+            setTimeout(() => {
+                button.disabled = false;
+                button.style.opacity = '1';
+            }, 500);
+        });
+    });
+});
+</script>
 @endsection

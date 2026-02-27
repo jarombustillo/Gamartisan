@@ -136,10 +136,13 @@ CREATE TABLE `donations` (
 
 CREATE TABLE `notifications` (
   `notificationID` int(11) NOT NULL,
-  `buyerID` int(11) NOT NULL,
+  `buyerID` int(11) DEFAULT NULL,
+  `artistID` int(11) DEFAULT NULL,
+  `adminID` int(11) DEFAULT NULL,
   `notifType` varchar(100) NOT NULL,
   `notifMess` varchar(200) DEFAULT NULL,
-  `dateSent` datetime DEFAULT current_timestamp()
+  `dateSent` datetime DEFAULT current_timestamp(),
+  `isRead` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -155,6 +158,8 @@ CREATE TABLE `orders` (
   `productID` int(11) NOT NULL,
   `ordQuantity` int(11) NOT NULL DEFAULT 1,
   `ordTotalPrice` decimal(10,2) NOT NULL,
+  `sellerAmount` decimal(10,2) NOT NULL DEFAULT 0,
+  `platformFee` decimal(10,2) NOT NULL DEFAULT 0,
   `orderDate` datetime DEFAULT current_timestamp(),
   `ordStatus` enum('pending','processing','shipped','delivered','cancelled') DEFAULT 'pending'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

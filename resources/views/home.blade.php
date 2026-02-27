@@ -18,7 +18,7 @@
                     piece supports someone's story.
                 </p>
                 <div class="flex flex-wrap gap-4">
-                    <a href="#products" class="btn-primary inline-flex items-center px-8 py-4 text-cream font-semibold rounded-full shadow-lg">
+                    <a href="{{ route('products') }}" class="btn-primary inline-flex items-center px-8 py-4 text-cream font-semibold rounded-full shadow-lg">
                         Explore Creations
                         <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -62,143 +62,7 @@
     </div>
 </section>
 
-<!-- Products Section -->
-<section id="products" class="py-20 bg-white">
-    <div class="max-w-7xl mx-auto px-6">
-        <div class="flex flex-col lg:flex-row gap-12">
-            <!-- Sidebar Navigation -->
-            <aside class="lg:w-64 flex-shrink-0">
-                <div class="sticky top-28 bg-cream/50 rounded-2xl p-6">
-                    <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Navigation</h3>
-                    <div class="relative mb-6">
-                        <input type="text" placeholder="Search items..." class="w-full px-4 py-3 bg-white rounded-xl border border-gray-200 focus:border-forest focus:ring-2 focus:ring-forest/20 outline-none transition-all text-sm">
-                        <svg class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </div>
-                    <nav class="space-y-3">
-                        <a href="#" class="sidebar-link flex items-center space-x-3 text-gray-600 hover:text-forest-dark">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                            <span>Profile</span>
-                        </a>
-                        <a href="#" class="sidebar-link flex items-center space-x-3 text-gray-600 hover:text-forest-dark">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                            </svg>
-                            <span>Wishlist</span>
-                        </a>
-                        <a href="#" class="sidebar-link flex items-center space-x-3 text-gray-600 hover:text-forest-dark">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                            </svg>
-                            <span>Categories</span>
-                        </a>
-                        <a href="#" class="sidebar-link flex items-center space-x-3 text-gray-600 hover:text-forest-dark">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <span>Settings</span>
-                        </a>
-                    </nav>
-                </div>
-            </aside>
 
-            <!-- Product Grid -->
-            <div class="flex-1">
-                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Product Card 1 -->
-                    <div class="product-card bg-cream rounded-2xl overflow-hidden shadow-lg cursor-pointer">
-                        <div class="aspect-square overflow-hidden">
-                            <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400&h=400&fit=crop" alt="Digital Art" class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
-                        </div>
-                        <div class="p-4">
-                            <h4 class="font-semibold text-forest-dark">Digital Art</h4>
-                            <p class="text-forest font-bold text-lg">₱299.99</p>
-                        </div>
-                    </div>
-
-                    <!-- Product Card 2 -->
-                    <div class="product-card bg-cream rounded-2xl overflow-hidden shadow-lg cursor-pointer">
-                        <div class="aspect-square overflow-hidden">
-                            <img src="https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400&h=400&fit=crop" alt="Dream Catcher" class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
-                        </div>
-                        <div class="p-4">
-                            <h4 class="font-semibold text-forest-dark">Dream Catcher</h4>
-                            <p class="text-forest font-bold text-lg">₱799.99</p>
-                        </div>
-                    </div>
-
-                    <!-- Product Card 3 -->
-                    <div class="product-card bg-cream rounded-2xl overflow-hidden shadow-lg cursor-pointer">
-                        <div class="aspect-square overflow-hidden">
-                            <img src="https://images.unsplash.com/photo-1544967082-d9d25d867d66?w=400&h=400&fit=crop" alt="Shark Tooth Necklace" class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
-                        </div>
-                        <div class="p-4">
-                            <h4 class="font-semibold text-forest-dark">Shark Tooth Necklace</h4>
-                            <p class="text-forest font-bold text-lg">₱200.00</p>
-                        </div>
-                    </div>
-
-                    <!-- Product Card 4 -->
-                    <div class="product-card bg-cream rounded-2xl overflow-hidden shadow-lg cursor-pointer">
-                        <div class="aspect-square overflow-hidden">
-                            <img src="https://images.unsplash.com/photo-1596568362785-2e7a77ec88cc?w=400&h=400&fit=crop" alt="Surfing the Waves Painting" class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
-                        </div>
-                        <div class="p-4">
-                            <h4 class="font-semibold text-forest-dark">Surfing the Waves of Siargao Painting</h4>
-                            <p class="text-forest font-bold text-lg">₱1,000.00</p>
-                        </div>
-                    </div>
-
-                    <!-- Product Card 5 -->
-                    <div class="product-card bg-cream rounded-2xl overflow-hidden shadow-lg cursor-pointer">
-                        <div class="aspect-square overflow-hidden">
-                            <img src="https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?w=400&h=400&fit=crop" alt="Handmade Basket Painting" class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
-                        </div>
-                        <div class="p-4">
-                            <h4 class="font-semibold text-forest-dark">Handmade Basket Painting</h4>
-                            <p class="text-forest font-bold text-lg">₱1,200.00</p>
-                        </div>
-                    </div>
-
-                    <!-- Product Card 6 -->
-                    <div class="product-card bg-cream rounded-2xl overflow-hidden shadow-lg cursor-pointer">
-                        <div class="aspect-square overflow-hidden">
-                            <img src="https://images.unsplash.com/photo-1490312278390-ab64016e0aa9?w=400&h=400&fit=crop" alt="Mountain Sunset Art" class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
-                        </div>
-                        <div class="p-4">
-                            <h4 class="font-semibold text-forest-dark">Mountain Sunset Art</h4>
-                            <p class="text-forest font-bold text-lg">₱850.00</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Pagination -->
-                <div class="flex items-center justify-center space-x-2 mt-12">
-                    <button class="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-forest hover:text-cream hover:border-forest transition-all">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                        </svg>
-                    </button>
-                    <button class="w-10 h-10 rounded-full bg-forest text-cream font-semibold">1</button>
-                    <button class="w-10 h-10 rounded-full border border-gray-300 hover:bg-forest hover:text-cream hover:border-forest transition-all font-semibold">2</button>
-                    <button class="w-10 h-10 rounded-full border border-gray-300 hover:bg-forest hover:text-cream hover:border-forest transition-all font-semibold">3</button>
-                    <button class="w-10 h-10 rounded-full border border-gray-300 hover:bg-forest hover:text-cream hover:border-forest transition-all font-semibold">4</button>
-                    <button class="w-10 h-10 rounded-full border border-gray-300 hover:bg-forest hover:text-cream hover:border-forest transition-all font-semibold">5</button>
-                    <span class="px-2 text-gray-400">...</span>
-                    <button class="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-forest hover:text-cream hover:border-forest transition-all">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
 
 <!-- Quote Section -->
 <section class="relative h-[500px]">

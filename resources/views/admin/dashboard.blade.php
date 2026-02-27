@@ -6,7 +6,7 @@
 @section('content')
 <div class="space-y-6">
     <!-- Stats Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <!-- Total Revenue -->
         <div class="stat-card bg-white rounded-xl p-6 shadow-sm">
             <div class="flex items-center justify-between">
@@ -60,12 +60,33 @@
                 <span>{{ $stats['total_buyers'] }} buyers • {{ $stats['total_artists'] }} artists</span>
             </div>
         </div>
+    </div>
+
+    <!-- Secondary Stats -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <!-- Platform Earnings -->
+        <div class="stat-card bg-white rounded-xl p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">Platform Earnings (5%)</p>
+                    <p class="text-2xl font-bold text-gray-800 mt-1">₱{{ number_format($stats['platform_earnings'], 2) }}</p>
+                </div>
+                <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="mt-4 flex items-center text-sm text-gray-500">
+                <span>Gamartisan commission</span>
+            </div>
+        </div>
 
         <!-- Total Donations -->
         <div class="stat-card bg-white rounded-xl p-6 shadow-sm">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-500 font-medium">Total Donations</p>
+                    <p class="text-sm text-gray-500 font-medium">Total Donations (10%)</p>
                     <p class="text-2xl font-bold text-gray-800 mt-1">₱{{ number_format($stats['total_donations'], 2) }}</p>
                 </div>
                 <div class="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center">

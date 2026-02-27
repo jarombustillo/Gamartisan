@@ -32,7 +32,7 @@
                         <th class="px-6 py-4">Order ID</th>
                         <th class="px-6 py-4">Product</th>
                         <th class="px-6 py-4">Buyer</th>
-                        <th class="px-6 py-4">Amount</th>
+                        <th class="px-6 py-4">Your Earnings</th>
                         <th class="px-6 py-4">Date</th>
                         <th class="px-6 py-4">Status</th>
                         <th class="px-6 py-4">Actions</th>
@@ -44,7 +44,7 @@
                             <td class="px-6 py-4 text-sm font-medium text-gray-800">#{{ $order->orderID }}</td>
                             <td class="px-6 py-4 text-sm text-gray-600">{{ $order->product->prodName ?? 'N/A' }}</td>
                             <td class="px-6 py-4 text-sm text-gray-600">{{ $order->buyer->fullName ?? 'N/A' }}</td>
-                            <td class="px-6 py-4 text-sm font-medium text-gray-800">₱{{ number_format($order->ordTotalPrice, 2) }}</td>
+                            <td class="px-6 py-4 text-sm font-medium text-green-700">₱{{ number_format($order->sellerAmount, 2) }}</td>
                             <td class="px-6 py-4 text-sm text-gray-600">{{ $order->orderDate ? $order->orderDate->format('M d, Y') : 'N/A' }}</td>
                             <td class="px-6 py-4">
                                 @php
