@@ -15,7 +15,7 @@
                     class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-ochre focus:border-transparent outline-none" required>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                     <label for="categoryID" class="block text-sm font-medium text-gray-700 mb-2">Category *</label>
                     <select id="categoryID" name="categoryID" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-ochre focus:border-transparent outline-none" required>
@@ -28,6 +28,12 @@
                     <label for="prodPrice" class="block text-sm font-medium text-gray-700 mb-2">Price (₱) *</label>
                     <input type="number" id="prodPrice" name="prodPrice" value="{{ old('prodPrice', $product->prodPrice) }}" step="0.01" min="0"
                         class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-ochre focus:border-transparent outline-none" required>
+                </div>
+                <div>
+                    <label for="prodStock" class="block text-sm font-medium text-gray-700 mb-2">Stock Quantity *</label>
+                    <input type="number" id="prodStock" name="prodStock" value="{{ old('prodStock', $product->prodStock) }}" min="0"
+                        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-ochre focus:border-transparent outline-none" required>
+                    <p class="text-xs text-gray-500 mt-1">Set to 0 to mark as unavailable</p>
                 </div>
             </div>
 

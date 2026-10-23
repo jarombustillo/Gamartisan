@@ -193,6 +193,7 @@ CREATE TABLE `products` (
   `prodDesc` text DEFAULT NULL,
   `prodPrice` decimal(10,2) NOT NULL,
   `prodImage` varchar(255) DEFAULT NULL,
+  `prodStock` int(11) NOT NULL DEFAULT 0,
   `prodStatus` enum('available','unavailable') DEFAULT 'available'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 

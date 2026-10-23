@@ -12,6 +12,7 @@ use App\Models\Notification;
 use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use App\Services\AI\SalesInsightService;
 
 class ArtistDashboardController extends Controller
 {
@@ -90,10 +91,16 @@ class ArtistDashboardController extends Controller
             'prodName' => 'required|string|max:255',
             'prodDesc' => 'nullable|string',
             'prodPrice' => 'required|numeric|min:0',
+            'prodStock' => 'required|integer|min:0',
             'categoryID' => 'required|exists:CATEGORIES,categoryID',
             'prodImage' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'prodStatus' => 'required|in:available,unavailable',
         ]);
+
+        // Auto-set status based on stock
+        if ($validated['prodStock'] <= 0) {
+            $validated['prodStatus'] = 'unavailable';
+        }
 
         $validated['artistID'] = $artist->artistID;
 
@@ -143,10 +150,16 @@ class ArtistDashboardController extends Controller
             'prodName' => 'required|string|max:255',
             'prodDesc' => 'nullable|string',
             'prodPrice' => 'required|numeric|min:0',
+            'prodStock' => 'required|integer|min:0',
             'categoryID' => 'required|exists:CATEGORIES,categoryID',
             'prodImage' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'prodStatus' => 'required|in:available,unavailable',
         ]);
+
+        // Auto-set status based on stock
+        if ($validated['prodStock'] <= 0) {
+            $validated['prodStatus'] = 'unavailable';
+        }
 
         // Handle image upload
         if ($request->hasFile('prodImage')) {
@@ -315,5 +328,17 @@ class ArtistDashboardController extends Controller
         })->with(['product', 'buyer'])->orderBy('datePosted', 'desc')->paginate(15);
 
         return view('artist.reviews', compact('artist', 'reviews'));
+    }
+
+    /**
+     * AI-powered sales insights for the artist.
+     */
+    public function salesInsights()
+    {
+        $artist = $this->getArtist();
+        $service = new SalesInsightService();
+        $insights = $service->getInsightsForArtist($artist->artistID);
+
+        return view('artist.sales-insights', compact('artist', 'insights'));
     }
 }

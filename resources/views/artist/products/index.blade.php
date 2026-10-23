@@ -42,7 +42,10 @@
                             {{ ucfirst($product->prodStatus) }}
                         </span>
                     </div>
-                    <p class="text-sm text-gray-500 mb-2">{{ $product->category->catName ?? 'No Category' }}</p>
+                    <p class="text-sm text-gray-500 mb-1">{{ $product->category->catName ?? 'No Category' }}</p>
+                    <p class="text-sm {{ $product->prodStock <= 0 ? 'text-red-500 font-medium' : 'text-gray-500' }} mb-2">
+                        {{ $product->prodStock <= 0 ? 'Out of Stock' : 'Stock: ' . $product->prodStock }}
+                    </p>
                     <p class="text-lg font-bold text-ochre mb-4">₱{{ number_format($product->prodPrice, 2) }}</p>
                     
                     <div class="flex items-center gap-2">

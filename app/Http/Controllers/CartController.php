@@ -46,6 +46,14 @@ class CartController extends Controller
      */
     public function add(Request $request, Product $product)
     {
+        // Check if product is in stock
+        if ($product->prodStock <= 0) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'This product is out of stock.'], 422);
+            }
+            return back()->with('error', 'This product is out of stock.');
+        }
+
         $userID = session('user_id');
         $userType = session('user_type');
 
@@ -56,6 +64,13 @@ class CartController extends Controller
             ->first();
 
         if ($existing) {
+            // Don't exceed available stock
+            if ($existing->quantity >= $product->prodStock) {
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json(['success' => false, 'message' => 'Cannot add more. Only ' . $product->prodStock . ' in stock.'], 422);
+                }
+                return back()->with('error', 'Cannot add more. Only ' . $product->prodStock . ' in stock.');
+            }
             $existing->increment('quantity');
         } else {
             CartItem::create([
@@ -137,6 +152,13 @@ class CartController extends Controller
             return back()->with('error', 'Please select at least one item.');
         }
 
+        // Validate stock for all items before processing
+        foreach ($cartItems as $item) {
+            if ($item->product->prodStock < $item->quantity) {
+                return back()->with('error', "{$item->product->prodName} only has {$item->product->prodStock} item(s) in stock. Please update your cart.");
+            }
+        }
+
         $userType = session('user_type');
         $userID = session('user_id');
         $charity = Charity::find($validated['charityID']);
@@ -158,6 +180,13 @@ class CartController extends Controller
                 'platformFee' => $platformFee,
                 'orderDate' => now(),
                 'ordStatus' => 'pending',
+            ]);
+
+            // Decrement stock and auto-set unavailable if stock reaches 0
+            $newStock = $item->product->prodStock - $item->quantity;
+            $item->product->update([
+                'prodStock' => max($newStock, 0),
+                'prodStatus' => $newStock <= 0 ? 'unavailable' : $item->product->prodStatus,
             ]);
 
             Payment::create([
@@ -200,7 +229,6 @@ class CartController extends Controller
             ]);
         }
 
-        // Clear the cart
         // Clear only the ordered items from the cart
         $this->cartQuery()->whereIn('cartItemID', $selectedIds)->delete();
 

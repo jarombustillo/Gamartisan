@@ -31,6 +31,7 @@ class Product extends Model
         'prodDesc',
         'prodPrice',
         'prodImage',
+        'prodStock',
         'prodStatus',
     ];
 
@@ -39,6 +40,7 @@ class Product extends Model
      */
     protected $casts = [
         'prodPrice' => 'decimal:2',
+        'prodStock' => 'integer',
     ];
 
     /**

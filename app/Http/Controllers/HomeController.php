@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use App\Services\AI\RecommendationService;
 
 class HomeController extends Controller
 {
@@ -18,8 +19,21 @@ class HomeController extends Controller
             ->with(['artist', 'category'])
             ->take(6)
             ->get();
-            
-        return view('home', compact('featuredProducts'));
+
+        // AI Recommendations for logged-in users
+        $recommendedProducts = collect();
+        if (in_array(session('user_type'), ['buyer', 'artist'])) {
+            $service = new RecommendationService();
+            $recommendedProducts = $service->getRecommendationsForUser(
+                session('user_id'),
+                session('user_type')
+            );
+            if ($recommendedProducts->isEmpty()) {
+                $recommendedProducts = $service->getPopularProducts(6);
+            }
+        }
+
+        return view('home', compact('featuredProducts', 'recommendedProducts'));
     }
 
     /**
@@ -97,7 +111,15 @@ class HomeController extends Controller
                 ->get();
         }
 
-        return view('products.show', compact('product', 'reviews', 'avgRating', 'reviewCount', 'reviewableOrders'));
+        // AI Recommendations
+        $recService = new RecommendationService();
+        $similarProducts = $recService->getSimilarProducts($product->productID);
+        $alsoBought = $recService->getFrequentlyBoughtTogether($product->productID);
+
+        return view('products.show', compact(
+            'product', 'reviews', 'avgRating', 'reviewCount',
+            'reviewableOrders', 'similarProducts', 'alsoBought'
+        ));
     }
 
     /**

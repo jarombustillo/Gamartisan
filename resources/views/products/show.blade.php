@@ -76,28 +76,45 @@
 
                 <!-- Buy / Cart Buttons -->
                 @if(session('user_type') === 'buyer' || session('user_type') === 'artist')
-                    <div class="flex gap-3">
-                        <form action="{{ route('cart.add', $product) }}" method="POST" class="flex-1">
-                            @csrf
-                            <button type="submit" class="w-full text-center border-2 border-forest text-forest py-4 rounded-xl font-semibold text-lg hover:bg-forest/5 transition-colors flex items-center justify-center gap-2">
+                    @if($product->prodStock > 0)
+                        <div class="flex gap-3">
+                            <form action="{{ route('cart.add', $product) }}" method="POST" class="flex-1">
+                                @csrf
+                                <button type="submit" class="w-full text-center border-2 border-forest text-forest py-4 rounded-xl font-semibold text-lg hover:bg-forest/5 transition-colors flex items-center justify-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"></path></svg>
+                                    Add to Cart
+                                </button>
+                            </form>
+                            <a href="{{ route('checkout', $product) }}" class="flex-1 text-center bg-forest text-white py-4 rounded-xl font-semibold text-lg hover:bg-forest-dark transition-colors shadow-lg hover:shadow-xl">
+                                Buy Now
+                            </a>
+                        </div>
+                    @else
+                        <div class="flex gap-3">
+                            <button disabled class="flex-1 text-center border-2 border-gray-300 text-gray-400 py-4 rounded-xl font-semibold text-lg cursor-not-allowed flex items-center justify-center gap-2">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"></path></svg>
                                 Add to Cart
                             </button>
-                        </form>
-                        <a href="{{ route('checkout', $product) }}" class="flex-1 text-center bg-forest text-white py-4 rounded-xl font-semibold text-lg hover:bg-forest-dark transition-colors shadow-lg hover:shadow-xl">
-                            Buy Now
-                        </a>
-                    </div>
+                            <button disabled class="flex-1 text-center bg-gray-300 text-gray-500 py-4 rounded-xl font-semibold text-lg cursor-not-allowed">
+                                Sold Out
+                            </button>
+                        </div>
+                    @endif
                 @else
                     <a href="{{ route('login') }}" class="block w-full text-center border-2 border-forest text-forest py-4 rounded-xl font-semibold text-lg hover:bg-forest hover:text-white transition-colors">
                         Login to Purchase
                     </a>
                 @endif
 
-                <!-- Status -->
+                <!-- Stock Status -->
                 <div class="flex items-center gap-2 text-sm">
-                    <span class="w-3 h-3 bg-green-500 rounded-full"></span>
-                    <span class="text-gray-600">Available</span>
+                    @if($product->prodStock > 0)
+                        <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+                        <span class="text-gray-600">In Stock ({{ $product->prodStock }} available)</span>
+                    @else
+                        <span class="w-3 h-3 bg-red-500 rounded-full"></span>
+                        <span class="text-red-600 font-medium">Out of Stock</span>
+                    @endif
                 </div>
             </div>
         </div>
@@ -199,6 +216,76 @@
                 @endforelse
             </div>
         </div>
+
+        {{-- AI: You May Also Like --}}
+        @if(isset($similarProducts) && $similarProducts->count() > 0)
+        <div class="mt-16">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                </div>
+                <div>
+                    <h2 class="font-display text-2xl font-bold text-forest-dark">You May Also Like</h2>
+                    <p class="text-xs text-gray-400">AI-powered recommendations</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                @foreach($similarProducts as $rec)
+                    <a href="{{ route('products.show', $rec) }}" class="product-card bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 group">
+                        <div class="relative h-44 overflow-hidden">
+                            @if($rec->prodImage)
+                                <img src="{{ asset($rec->prodImage) }}" alt="{{ $rec->prodName }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                            @else
+                                <div class="w-full h-full bg-gray-100 flex items-center justify-center">
+                                    <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-medium text-gray-800 text-sm truncate">{{ $rec->prodName }}</h3>
+                            <p class="text-xs text-gray-500 mt-0.5">{{ $rec->artist->fullName ?? 'Artist' }}</p>
+                            <p class="text-forest font-bold mt-1">₱{{ number_format($rec->prodPrice, 2) }}</p>
+                        </div>
+                    </a>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        {{-- AI: Customers Also Bought --}}
+        @if(isset($alsoBought) && $alsoBought->count() > 0)
+        <div class="mt-12">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-8 h-8 bg-gradient-to-br from-ochre to-terracotta rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                </div>
+                <div>
+                    <h2 class="font-display text-2xl font-bold text-forest-dark">Customers Also Bought</h2>
+                    <p class="text-xs text-gray-400">Popular with buyers of this item</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                @foreach($alsoBought as $rec)
+                    <a href="{{ route('products.show', $rec) }}" class="product-card bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 group">
+                        <div class="relative h-44 overflow-hidden">
+                            @if($rec->prodImage)
+                                <img src="{{ asset($rec->prodImage) }}" alt="{{ $rec->prodName }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                            @else
+                                <div class="w-full h-full bg-gray-100 flex items-center justify-center">
+                                    <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-medium text-gray-800 text-sm truncate">{{ $rec->prodName }}</h3>
+                            <p class="text-xs text-gray-500 mt-0.5">{{ $rec->artist->fullName ?? 'Artist' }}</p>
+                            <p class="text-forest font-bold mt-1">₱{{ number_format($rec->prodPrice, 2) }}</p>
+                        </div>
+                    </a>
+                @endforeach
+            </div>
+        </div>
+        @endif
     </div>
 </div>
 

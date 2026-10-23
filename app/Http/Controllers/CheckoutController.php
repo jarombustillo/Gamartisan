@@ -20,6 +20,12 @@ class CheckoutController extends Controller
      */
     public function show(Product $product)
     {
+        // Block checkout if out of stock
+        if ($product->prodStock <= 0) {
+            return redirect()->route('products.show', $product)
+                ->with('error', 'This product is currently out of stock.');
+        }
+
         $product->load(['artist', 'category']);
         $charities = Charity::where('charStatus', 'available')->get();
         return view('checkout', compact('product', 'charities'));
@@ -35,6 +41,11 @@ class CheckoutController extends Controller
             'payMethod' => 'required|string|in:Cash on Delivery,GCash,Bank Transfer',
             'charityID' => 'required|exists:CHARITIES,charityID',
         ]);
+
+        // Check stock availability
+        if ($product->prodStock < $validated['ordQuantity']) {
+            return back()->with('error', 'Not enough stock available. Only ' . $product->prodStock . ' item(s) left.');
+        }
 
         $userType = session('user_type');
         $userId = session('user_id');
@@ -64,6 +75,13 @@ class CheckoutController extends Controller
             'platformFee' => $platformFee,
             'orderDate' => now(),
             'ordStatus' => 'pending',
+        ]);
+
+        // Decrement stock and auto-set unavailable if stock reaches 0
+        $newStock = $product->prodStock - $validated['ordQuantity'];
+        $product->update([
+            'prodStock' => max($newStock, 0),
+            'prodStatus' => $newStock <= 0 ? 'unavailable' : $product->prodStatus,
         ]);
 
         // Create payment record
