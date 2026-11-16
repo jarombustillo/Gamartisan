@@ -15,7 +15,6 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
-use App\Http\Controllers\Admin\AIController;
 
 
 /*
@@ -106,10 +105,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Reviews
         Route::get('reviews', [AdminReviewController::class, 'index'])->name('reviews.index');
         Route::delete('reviews/{review}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');
-
-        // Predictive AI
-        Route::get('ai/trends', [AIController::class, 'trendForecast'])->name('ai.trends');
-        Route::get('ai/behavioral', [AIController::class, 'behavioralAnalytics'])->name('ai.behavioral');
     });
 });
 
@@ -147,7 +142,6 @@ Route::prefix('artist')->name('artist.')->middleware('user.auth:artist')->group(
     Route::put('/password', [ArtistDashboardController::class, 'updatePassword'])->name('password.update');
     Route::get('/transactions', [ArtistDashboardController::class, 'transactions'])->name('transactions');
     Route::get('/reviews', [ArtistDashboardController::class, 'reviews'])->name('reviews');
-    Route::get('/sales-insights', [ArtistDashboardController::class, 'salesInsights'])->name('sales-insights');
 
     // Notifications
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');

@@ -61,20 +61,6 @@
                                     <p class="text-sm text-gray-500">Pay when you receive the item</p>
                                 </div>
                             </label>
-                            <label class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-forest transition-colors">
-                                <input type="radio" name="payMethod" value="GCash" class="text-forest focus:ring-forest">
-                                <div>
-                                    <p class="font-medium text-gray-800">GCash</p>
-                                    <p class="text-sm text-gray-500">Pay via GCash mobile wallet</p>
-                                </div>
-                            </label>
-                            <label class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-forest transition-colors">
-                                <input type="radio" name="payMethod" value="Bank Transfer" class="text-forest focus:ring-forest">
-                                <div>
-                                    <p class="font-medium text-gray-800">Bank Transfer</p>
-                                    <p class="text-sm text-gray-500">Direct bank transfer</p>
-                                </div>
-                            </label>
                         </div>
                     </div>
 

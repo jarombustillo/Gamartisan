@@ -12,7 +12,6 @@ use App\Models\Notification;
 use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use App\Services\AI\SalesInsightService;
 
 class ArtistDashboardController extends Controller
 {
@@ -100,6 +99,8 @@ class ArtistDashboardController extends Controller
         // Auto-set status based on stock
         if ($validated['prodStock'] <= 0) {
             $validated['prodStatus'] = 'unavailable';
+        } else {
+            $validated['prodStatus'] = 'available';
         }
 
         $validated['artistID'] = $artist->artistID;
@@ -159,6 +160,8 @@ class ArtistDashboardController extends Controller
         // Auto-set status based on stock
         if ($validated['prodStock'] <= 0) {
             $validated['prodStatus'] = 'unavailable';
+        } else {
+            $validated['prodStatus'] = 'available';
         }
 
         // Handle image upload
@@ -330,15 +333,4 @@ class ArtistDashboardController extends Controller
         return view('artist.reviews', compact('artist', 'reviews'));
     }
 
-    /**
-     * AI-powered sales insights for the artist.
-     */
-    public function salesInsights()
-    {
-        $artist = $this->getArtist();
-        $service = new SalesInsightService();
-        $insights = $service->getInsightsForArtist($artist->artistID);
-
-        return view('artist.sales-insights', compact('artist', 'insights'));
-    }
 }

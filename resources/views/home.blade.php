@@ -51,7 +51,7 @@
             <div class="relative flex justify-center lg:justify-end">
                 <div class="relative float-animation">
                     <div class="w-80 h-96 lg:w-96 lg:h-[500px] bg-gradient-to-br from-sage/30 to-forest/20 rounded-3xl overflow-hidden shadow-2xl">
-                        <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop" alt="Artisan wearing handcrafted clothing" class="w-full h-full object-cover">
+                        <img src="{{ asset('uploads/picture1.png') }}" alt="Artisan wearing handcrafted clothing" class="w-full h-full object-cover">
                     </div>
                     <!-- Decorative Elements -->
                     <div class="absolute -top-4 -left-4 w-16 h-16 bg-ochre/30 rounded-full blur-xl"></div>
@@ -104,49 +104,8 @@
     </div>
 </section>
 
-<!-- AI Recommendations (logged-in users only) -->
-@if(isset($recommendedProducts) && $recommendedProducts->count() > 0)
-<section class="py-16 bg-sand">
-    <div class="max-w-7xl mx-auto px-6">
-        <div class="flex items-center gap-3 mb-8">
-            <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
-            </div>
-            <div>
-                <h2 class="font-display text-3xl font-bold text-forest-dark">Recommended For You</h2>
-                <p class="text-sm text-gray-500">AI-curated picks based on your interests</p>
-            </div>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            @foreach($recommendedProducts as $product)
-                <a href="{{ route('products.show', $product) }}" class="product-card bg-white rounded-2xl overflow-hidden shadow-md group">
-                    <div class="relative h-52 overflow-hidden">
-                        @if($product->prodImage)
-                            <img src="{{ asset($product->prodImage) }}" alt="{{ $product->prodName }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                        @else
-                            <div class="w-full h-full bg-gray-100 flex items-center justify-center">
-                                <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            </div>
-                        @endif
-                        <div class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium text-forest flex items-center gap-1">
-                            <svg class="w-3 h-3 text-purple-500" fill="currentColor" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
-                            AI Pick
-                        </div>
-                    </div>
-                    <div class="p-5">
-                        @if($product->category)
-                            <span class="text-xs font-medium text-forest bg-forest/10 px-2 py-0.5 rounded-full">{{ $product->category->catName }}</span>
-                        @endif
-                        <h3 class="font-semibold text-gray-800 mt-2 mb-1">{{ $product->prodName }}</h3>
-                        <p class="text-sm text-gray-500">by {{ $product->artist->fullName ?? 'Artist' }}</p>
-                        <p class="text-lg font-bold text-forest mt-2">₱{{ number_format($product->prodPrice, 2) }}</p>
-                    </div>
-                </a>
-            @endforeach
-        </div>
-    </div>
-</section>
-@endif
+
+
 
 <!-- CTA Section -->
 <section class="cta-section py-20">

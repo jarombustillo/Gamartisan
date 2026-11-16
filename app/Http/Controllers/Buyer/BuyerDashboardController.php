@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Buyer;
 use App\Http\Controllers\Controller;
 use App\Models\Buyer;
 use App\Models\Order;
-use App\Services\AI\RecommendationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -36,17 +35,7 @@ class BuyerDashboardController extends Controller
             'pending_orders' => $buyer->orders()->where('ordStatus', 'pending')->count(),
         ];
 
-        // AI Recommendations (with popular products fallback)
-        $service = new RecommendationService();
-        $recommendedProducts = $service->getRecommendationsForUser(
-            session('user_id'),
-            'buyer'
-        );
-        if ($recommendedProducts->isEmpty()) {
-            $recommendedProducts = $service->getPopularProducts(6);
-        }
-
-        return view('buyer.dashboard', compact('buyer', 'recentOrders', 'stats', 'recommendedProducts'));
+        return view('buyer.dashboard', compact('buyer', 'recentOrders', 'stats'));
     }
 
     /**

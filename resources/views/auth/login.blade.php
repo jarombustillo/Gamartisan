@@ -14,7 +14,7 @@
         </div>
         
         <div class="flex-1 flex items-center justify-center p-8">
-            <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=800&fit=crop" 
+            <img src="{{ asset('uploads/picture2.png') }}" 
                  alt="Artistic Portrait" 
                  class="max-h-[70vh] w-auto object-contain"
                  style="filter: contrast(1.1) saturate(1.2);">

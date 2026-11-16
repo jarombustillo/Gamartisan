@@ -135,7 +135,7 @@ class CartController extends Controller
     public function checkout(Request $request)
     {
         $validated = $request->validate([
-            'payMethod' => 'required|string|in:Cash on Delivery,GCash,Bank Transfer',
+            'payMethod' => 'required|string|in:Cash on Delivery',
             'charityID' => 'required|exists:CHARITIES,charityID',
             'selected_items' => 'required|array|min:1',
             'selected_items.*' => 'integer',

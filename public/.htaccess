@@ -5,6 +5,9 @@
 
     RewriteEngine On
 
+    # Required because the app lives under /gamartisan/public, not the domain root.
+    RewriteBase /gamartisan/public/
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
