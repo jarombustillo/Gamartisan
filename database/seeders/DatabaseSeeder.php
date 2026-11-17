@@ -6,15 +6,37 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Starter accounts, copied from database/gamartisan.sql.
+ * Starter accounts (copied from database/gamartisan.sql) and starter categories.
  *
  * Safe to run more than once (php artisan db:seed --force): rows are matched
  * on their ID and updated instead of duplicated.
  */
 class DatabaseSeeder extends Seeder
 {
+    /**
+     * Starter categories. Artists cannot list a product without one, and only
+     * admins can create them, so a fresh database starts with these.
+     */
+    private const STARTER_CATEGORIES = [
+        'Paintings & Art',
+        'Pottery & Ceramics',
+        'Jewelry & Accessories',
+        'Textiles & Clothing',
+        'Woodcraft',
+        'Woven Goods & Bags',
+        'Home Decor',
+    ];
+
     public function run(): void
     {
+        // Only when there are none: this seeder runs on every deploy, and an
+        // admin's renamed or deleted categories must not come back.
+        if (!DB::table('categories')->exists()) {
+            DB::table('categories')->insert(
+                array_map(fn ($name) => ['catName' => $name], self::STARTER_CATEGORIES)
+            );
+        }
+
         DB::table('admin')->updateOrInsert(
             ['adminID' => 1],
             ['adminUser' => 'admin', 'adminPass' => '$2y$10$hIHFvRq0P4EMJ3Xz10G5merSbP1qtoj41dk2WqnWHkym70qt5h0ly'],
