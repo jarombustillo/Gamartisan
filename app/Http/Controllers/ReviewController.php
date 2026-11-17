@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Review;
 use App\Models\Product;
 use App\Models\Order;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
 
 class ReviewController extends Controller
@@ -17,8 +18,8 @@ class ReviewController extends Controller
         $buyerID = session('user_id');
         $userType = session('user_type');
 
-        if (!in_array($userType, ['buyer', 'artist'])) {
-            abort(403, 'Only buyers and artists can write reviews.');
+        if ($userType !== 'buyer') {
+            abort(403, 'Only buyers can write reviews.');
         }
 
         $validated = $request->validate([
@@ -47,14 +48,19 @@ class ReviewController extends Controller
             return back()->with('error', 'You have already reviewed this order.');
         }
 
-        Review::create([
-            'productID' => $product->productID,
-            'buyerID' => $buyerID,
-            'orderID' => $validated['orderID'],
-            'revRating' => $validated['revRating'],
-            'revText' => $validated['revText'],
-            'datePosted' => now(),
-        ]);
+        try {
+            Review::create([
+                'productID' => $product->productID,
+                'buyerID' => $buyerID,
+                'orderID' => $validated['orderID'],
+                'revRating' => $validated['revRating'],
+                'revText' => $validated['revText'],
+                'datePosted' => now(),
+            ]);
+        } catch (UniqueConstraintViolationException) {
+            // A double submit raced past the check above; the unique index caught it.
+            return back()->with('error', 'You have already reviewed this order.');
+        }
 
         return back()->with('success', 'Review submitted successfully!');
     }

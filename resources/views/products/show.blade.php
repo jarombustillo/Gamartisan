@@ -19,7 +19,7 @@
             <div>
                 @if($product->prodImage)
                     <div class="bg-white rounded-2xl overflow-hidden shadow-lg">
-                        <img src="{{ asset($product->prodImage) }}" alt="{{ $product->prodName }}" class="w-full h-[500px] object-cover">
+                        <img src="{{ $product->image_url }}" alt="{{ $product->prodName }}" class="w-full h-[500px] object-cover">
                     </div>
                 @else
                     <div class="bg-white rounded-2xl shadow-lg h-[500px] flex items-center justify-center">
@@ -75,7 +75,7 @@
                 </div>
 
                 <!-- Buy / Cart Buttons -->
-                @if(session('user_type') === 'buyer' || session('user_type') === 'artist')
+                @if(session('user_type') === 'buyer')
                     @if($product->prodStock > 0)
                         <div class="flex gap-3">
                             <form action="{{ route('cart.add', $product) }}" method="POST" class="flex-1">

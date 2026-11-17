@@ -56,7 +56,7 @@ class AuthController extends Controller
         ]);
 
         // Login the user
-        session([
+        $this->startSession([
             'user_type' => 'buyer',
             'user_id' => $buyer->buyerID,
             'user_name' => $buyer->firstName,
@@ -89,7 +89,7 @@ class AuthController extends Controller
         ]);
 
         // Login the user
-        session([
+        $this->startSession([
             'user_type' => 'artist',
             'user_id' => $artist->artistID,
             'user_name' => $artist->firstName,
@@ -135,7 +135,7 @@ class AuthController extends Controller
                     'email' => 'Your account has been suspended. Please contact support.',
                 ])->withInput($request->only('email'));
             }
-            session([
+            $this->startSession([
                 'user_type' => 'buyer',
                 'user_id' => $buyer->buyerID,
                 'user_name' => $buyer->firstName,
@@ -152,7 +152,7 @@ class AuthController extends Controller
                     'email' => 'Your account has been suspended. Please contact support.',
                 ])->withInput($request->only('email'));
             }
-            session([
+            $this->startSession([
                 'user_type' => 'artist',
                 'user_id' => $artist->artistID,
                 'user_name' => $artist->firstName,
@@ -163,7 +163,7 @@ class AuthController extends Controller
         // Try to find admin (by username)
         $admin = Admin::where('adminUser', $request->email)->first();
         if ($admin && Hash::check($request->password, $admin->adminPass)) {
-            session([
+            $this->startSession([
                 'user_type' => 'admin',
                 'user_id' => $admin->adminID,
                 'user_name' => $admin->adminUser,
@@ -182,7 +182,20 @@ class AuthController extends Controller
      */
     public function logout()
     {
-        session()->forget(['user_type', 'user_id', 'user_name', 'admin_id']);
+        // Destroy the whole session and CSRF token, not just the login keys.
+        session()->invalidate();
+        session()->regenerateToken();
+
         return redirect()->route('home')->with('success', 'Logged out successfully!');
+    }
+
+    /**
+     * Log a user in with a fresh session ID, so a session ID planted
+     * before login (session fixation) is useless afterwards.
+     */
+    private function startSession(array $data): void
+    {
+        session()->regenerate();
+        session($data);
     }
 }

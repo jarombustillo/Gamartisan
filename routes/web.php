@@ -37,7 +37,9 @@ Route::get('/products/{product}', [HomeController::class, 'showProduct'])->name(
 // Checkout Routes (Buyer or Artist)
 use App\Http\Controllers\CartController;
 
-Route::middleware('user.auth')->group(function () {
+// Buyers only: orders.buyerID references the buyers table, so artists/admins
+// checking out used to file orders under whichever buyer shared their ID.
+Route::middleware('user.auth:buyer')->group(function () {
     Route::get('/checkout/{product}', [CheckoutController::class, 'show'])->name('checkout');
     Route::post('/checkout/{product}', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::post('/products/{product}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
@@ -55,10 +57,10 @@ Route::middleware('user.auth')->group(function () {
 Route::get('/join', [AuthController::class, 'join'])->name('join');
 Route::get('/register/buyer', [AuthController::class, 'registerBuyer'])->name('register.buyer');
 Route::get('/register/seller', [AuthController::class, 'registerSeller'])->name('register.seller');
-Route::post('/register/buyer', [AuthController::class, 'storeBuyer'])->name('register.buyer.store');
-Route::post('/register/seller', [AuthController::class, 'storeSeller'])->name('register.seller.store');
+Route::post('/register/buyer', [AuthController::class, 'storeBuyer'])->name('register.buyer.store')->middleware('throttle:register');
+Route::post('/register/seller', [AuthController::class, 'storeSeller'])->name('register.seller.store')->middleware('throttle:register');
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->name('login.store');
+Route::post('/login', [AuthController::class, 'login'])->name('login.store')->middleware('throttle:login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Admin Routes

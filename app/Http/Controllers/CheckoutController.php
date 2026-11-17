@@ -2,16 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
-use App\Models\Order;
-use App\Models\Payment;
-use App\Models\Donation;
 use App\Models\Charity;
-use App\Models\Buyer;
-use App\Models\Artist;
-use App\Models\Admin;
-use App\Models\Notification;
+use App\Models\Product;
+use App\Services\OrderException;
+use App\Services\OrderService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
 {
@@ -20,112 +17,49 @@ class CheckoutController extends Controller
      */
     public function show(Product $product)
     {
-        // Block checkout if out of stock
-        if ($product->prodStock <= 0) {
+        if ($product->prodStatus !== 'available' || $product->prodStock <= 0) {
             return redirect()->route('products.show', $product)
                 ->with('error', 'This product is currently out of stock.');
         }
 
         $product->load(['artist', 'category']);
         $charities = Charity::where('charStatus', 'available')->get();
-        return view('checkout', compact('product', 'charities'));
+        // One-time token: a double-clicked or re-sent form cannot place the order twice.
+        $checkoutToken = Str::random(40);
+
+        return view('checkout', compact('product', 'charities', 'checkoutToken'));
     }
 
     /**
      * Process the checkout and create order, payment, and donation.
      */
-    public function store(Request $request, Product $product)
+    public function store(Request $request, Product $product, OrderService $orders)
     {
         $validated = $request->validate([
-            'ordQuantity' => 'required|integer|min:1',
+            'ordQuantity' => 'required|integer|min:1|max:1000',
             'payMethod' => 'required|string|in:Cash on Delivery',
-            'charityID' => 'required|exists:charities,charityID',
+            'charityID' => 'required|integer',
+            'checkout_token' => 'required|string|size:40',
         ]);
 
-        // Check stock availability
-        if ($product->prodStock < $validated['ordQuantity']) {
-            return back()->with('error', 'Not enough stock available. Only ' . $product->prodStock . ' item(s) left.');
+        // Cache::add is atomic: only the first request with this token gets through.
+        if (!Cache::add('checkout-token:' . $validated['checkout_token'], true, now()->addHour())) {
+            return redirect()->route('buyer.orders')->with('success', 'Your order was already placed.');
         }
 
-        $userType = session('user_type');
-        $userId = session('user_id');
-        $totalPrice = $product->prodPrice * $validated['ordQuantity'];
-
-        // Revenue split: 85% seller, 10% charity, 5% platform
-        $sellerAmount = round($totalPrice * 0.85, 2);
-        $platformFee = round($totalPrice * 0.05, 2);
-        $donationAmount = round($totalPrice * 0.10, 2);
-
-        // Determine buyerID and artistID
-        if ($userType === 'buyer') {
-            $buyerID = $userId;
-        } else {
-            // Artist buying — use their artistID as buyerID reference
-            $buyerID = $userId;
+        try {
+            $orders->place(
+                (int) session('user_id'),
+                (string) session('user_name'),
+                [$product->productID => (int) $validated['ordQuantity']],
+                (int) $validated['charityID'],
+                $validated['payMethod'],
+            );
+        } catch (OrderException $e) {
+            Cache::forget('checkout-token:' . $validated['checkout_token']); // let them retry
+            return back()->withInput()->with('error', $e->getMessage());
         }
 
-        // Create the order
-        $order = Order::create([
-            'buyerID' => $buyerID,
-            'artistID' => $product->artistID,
-            'productID' => $product->productID,
-            'ordQuantity' => $validated['ordQuantity'],
-            'ordTotalPrice' => $totalPrice,
-            'sellerAmount' => $sellerAmount,
-            'platformFee' => $platformFee,
-            'orderDate' => now(),
-            'ordStatus' => 'pending',
-        ]);
-
-        // Decrement stock and auto-set unavailable if stock reaches 0
-        $newStock = $product->prodStock - $validated['ordQuantity'];
-        $product->update([
-            'prodStock' => max($newStock, 0),
-            'prodStatus' => $newStock <= 0 ? 'unavailable' : $product->prodStatus,
-        ]);
-
-        // Create payment record
-        Payment::create([
-            'orderID' => $order->orderID,
-            'payAmount' => $totalPrice,
-            'payMethod' => $validated['payMethod'],
-            'payStatus' => 'pending',
-            'datePaid' => null,
-        ]);
-
-        // Auto-allocate 10% to selected charity
-        Donation::create([
-            'orderID' => $order->orderID,
-            'charityID' => $validated['charityID'],
-            'amountDonated' => $donationAmount,
-            'dateDonated' => now(),
-        ]);
-
-        // Get charity name for notification
-        $charity = Charity::find($validated['charityID']);
-        $charityName = $charity ? $charity->charName : 'charity';
-
-        // Notify artist: new order received
-        Notification::send('order', "New order #{$order->orderID} for {$product->prodName} (Qty: {$validated['ordQuantity']}) — ₱" . number_format($sellerAmount, 2) . " earnings", [
-            'artistID' => $product->artistID,
-        ]);
-
-        // Notify buyer: donation confirmation
-        if ($userType === 'buyer') {
-            Notification::send('donation', "₱" . number_format($donationAmount, 2) . " from your order #{$order->orderID} was donated to {$charityName}", [
-                'buyerID' => $buyerID,
-            ]);
-        }
-
-        // Notify all admins: new order
-        $adminIds = Admin::pluck('adminID')->toArray();
-        if (!empty($adminIds)) {
-            Notification::send('order', "New order #{$order->orderID} — ₱" . number_format($totalPrice, 2) . " from " . session('user_name'), [
-                'adminID' => $adminIds,
-            ]);
-        }
-
-        $redirectRoute = $userType === 'buyer' ? 'buyer.orders' : 'artist.orders';
-        return redirect()->route($redirectRoute)->with('success', 'Order placed successfully! 10% of your purchase has been donated to charity, and 5% supports the Gamartisan platform.');
+        return redirect()->route('buyer.orders')->with('success', 'Order placed successfully! 10% of your purchase has been donated to charity, and 5% supports the Gamartisan platform.');
     }
 }

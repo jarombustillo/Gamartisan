@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Artist;
+use App\Models\Buyer;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,6 +26,21 @@ class UserAuth
         if ($type && session('user_type') !== $type) {
             return redirect()->route(session('user_type') . '.dashboard')
                 ->with('error', 'You do not have access to that area.');
+        }
+
+        // Re-check the account on every request: suspending or deleting an
+        // account must end sessions that are already logged in.
+        $model = ['buyer' => Buyer::class, 'artist' => Artist::class][session('user_type')] ?? null;
+        if ($model) {
+            $account = $model::find(session('user_id'));
+            if (!$account || $account->status === 'suspended') {
+                session()->invalidate();
+                session()->regenerateToken();
+
+                return redirect()->route('login')->withErrors([
+                    'email' => $account ? 'Your account has been suspended. Please contact support.' : 'Please login to continue.',
+                ]);
+            }
         }
 
         return $next($request);

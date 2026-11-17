@@ -84,7 +84,7 @@ class HomeController extends Controller
 
         // Check if logged-in buyer/artist has delivered orders they can review
         $reviewableOrders = collect();
-        if (in_array(session('user_type'), ['buyer', 'artist'])) {
+        if (session('user_type') === 'buyer') {
             $userID = session('user_id');
             $reviewedOrderIDs = \App\Models\Review::where('buyerID', $userID)
                 ->where('productID', $product->productID)

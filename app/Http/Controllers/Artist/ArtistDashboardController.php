@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\Admin;
 use App\Models\Notification;
 use App\Models\Review;
+use App\Support\ProductImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -107,10 +108,7 @@ class ArtistDashboardController extends Controller
 
         // Handle image upload
         if ($request->hasFile('prodImage')) {
-            $image = $request->file('prodImage');
-            $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('uploads/products'), $filename);
-            $validated['prodImage'] = '/uploads/products/' . $filename;
+            $validated['prodImage'] = ProductImage::store($request->file('prodImage'));
         } else {
             unset($validated['prodImage']);
         }
@@ -166,15 +164,9 @@ class ArtistDashboardController extends Controller
 
         // Handle image upload
         if ($request->hasFile('prodImage')) {
-            // Delete old image if exists
-            if ($product->prodImage && file_exists(public_path($product->prodImage))) {
-                unlink(public_path($product->prodImage));
-            }
-            
-            $image = $request->file('prodImage');
-            $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('uploads/products'), $filename);
-            $validated['prodImage'] = '/uploads/products/' . $filename;
+            $oldImage = $product->prodImage;
+            $validated['prodImage'] = ProductImage::store($request->file('prodImage'));
+            ProductImage::delete($oldImage);
         } else {
             unset($validated['prodImage']);
         }

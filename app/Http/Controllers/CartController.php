@@ -3,13 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\CartItem;
-use App\Models\Product;
-use App\Models\Order;
-use App\Models\Payment;
-use App\Models\Donation;
 use App\Models\Charity;
-use App\Models\Admin;
-use App\Models\Notification;
+use App\Models\Product;
+use App\Services\OrderException;
+use App\Services\OrderService;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
 
 class CartController extends Controller
@@ -21,6 +19,15 @@ class CartController extends Controller
     {
         return CartItem::where('userID', session('user_id'))
             ->where('userType', session('user_type'));
+    }
+
+    private function respond(Request $request, bool $ok, string $message, array $extra = [], int $status = 422)
+    {
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => $ok, 'message' => $message] + $extra, $ok ? 200 : $status);
+        }
+
+        return back()->with($ok ? 'success' : 'error', $message);
     }
 
     /**
@@ -46,52 +53,36 @@ class CartController extends Controller
      */
     public function add(Request $request, Product $product)
     {
-        // Check if product is in stock
-        if ($product->prodStock <= 0) {
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json(['success' => false, 'message' => 'This product is out of stock.'], 422);
-            }
-            return back()->with('error', 'This product is out of stock.');
+        if ($product->prodStatus !== 'available' || $product->prodStock <= 0) {
+            return $this->respond($request, false, 'This product is out of stock.');
         }
 
-        $userID = session('user_id');
-        $userType = session('user_type');
+        $existing = $this->cartQuery()->where('productID', $product->productID)->first();
 
-        // Check if already in cart
-        $existing = CartItem::where('userID', $userID)
-            ->where('userType', $userType)
-            ->where('productID', $product->productID)
-            ->first();
-
-        if ($existing) {
-            // Don't exceed available stock
-            if ($existing->quantity >= $product->prodStock) {
-                if ($request->ajax() || $request->wantsJson()) {
-                    return response()->json(['success' => false, 'message' => 'Cannot add more. Only ' . $product->prodStock . ' in stock.'], 422);
-                }
-                return back()->with('error', 'Cannot add more. Only ' . $product->prodStock . ' in stock.');
+        if (!$existing) {
+            try {
+                CartItem::create([
+                    'userID' => session('user_id'),
+                    'userType' => session('user_type'),
+                    'productID' => $product->productID,
+                    'quantity' => 1,
+                    'dateAdded' => now(),
+                ]);
+            } catch (UniqueConstraintViolationException) {
+                // A parallel request (double click) added it first; treat as added.
             }
-            $existing->increment('quantity');
+        } elseif ($existing->quantity >= $product->prodStock) {
+            return $this->respond($request, false, 'Cannot add more. Only ' . $product->prodStock . ' in stock.');
         } else {
-            CartItem::create([
-                'userID' => $userID,
-                'userType' => $userType,
-                'productID' => $product->productID,
-                'quantity' => 1,
-                'dateAdded' => now(),
-            ]);
+            // Conditional increment so parallel clicks cannot push quantity past stock.
+            CartItem::where('cartItemID', $existing->cartItemID)
+                ->where('quantity', '<', $product->prodStock)
+                ->increment('quantity');
         }
 
-        if ($request->ajax() || $request->wantsJson()) {
-            $cartCount = CartItem::where('userID', $userID)->where('userType', $userType)->count();
-            return response()->json([
-                'success' => true,
-                'message' => "{$product->prodName} added to cart!",
-                'cartCount' => $cartCount,
-            ]);
-        }
-
-        return back()->with('success', "{$product->prodName} added to cart!");
+        return $this->respond($request, true, "{$product->prodName} added to cart!", [
+            'cartCount' => $this->cartQuery()->count(),
+        ]);
     }
 
     /**
@@ -99,20 +90,17 @@ class CartController extends Controller
      */
     public function update(Request $request, CartItem $cartItem)
     {
-        $data = $request->json()->all() ?: $request->all();
-        $quantity = $data['quantity'] ?? 1;
-
         if ($cartItem->userID != session('user_id') || $cartItem->userType != session('user_type')) {
             abort(403);
         }
 
-        $cartItem->update(['quantity' => max(1, (int) $quantity)]);
+        $data = $request->json()->all() ?: $request->all();
+        $stock = (int) optional($cartItem->product)->prodStock;
+        $quantity = max(1, min((int) ($data['quantity'] ?? 1), max($stock, 1)));
 
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json(['success' => true]);
-        }
+        $cartItem->update(['quantity' => $quantity]);
 
-        return back()->with('success', 'Cart updated.');
+        return $this->respond($request, true, 'Cart updated.', ['quantity' => $quantity, 'stock' => $stock]);
     }
 
     /**
@@ -132,107 +120,48 @@ class CartController extends Controller
     /**
      * Checkout selected cart items — creates an order for each selected item.
      */
-    public function checkout(Request $request)
+    public function checkout(Request $request, OrderService $orders)
     {
         $validated = $request->validate([
             'payMethod' => 'required|string|in:Cash on Delivery',
-            'charityID' => 'required|exists:charities,charityID',
+            'charityID' => 'required|integer',
             'selected_items' => 'required|array|min:1',
             'selected_items.*' => 'integer',
         ]);
 
-        $selectedIds = $validated['selected_items'];
-
-        $cartItems = $this->cartQuery()
-            ->whereIn('cartItemID', $selectedIds)
-            ->with('product.artist')
-            ->get();
+        $selectedIds = array_values(array_unique(array_map('intval', $validated['selected_items'])));
+        $cartItems = $this->cartQuery()->whereIn('cartItemID', $selectedIds)->get();
 
         if ($cartItems->isEmpty()) {
             return back()->with('error', 'Please select at least one item.');
         }
 
-        // Validate stock for all items before processing
+        $quantities = [];
         foreach ($cartItems as $item) {
-            if ($item->product->prodStock < $item->quantity) {
-                return back()->with('error', "{$item->product->prodName} only has {$item->product->prodStock} item(s) in stock. Please update your cart.");
-            }
+            $quantities[$item->productID] = ($quantities[$item->productID] ?? 0) + $item->quantity;
+        }
+        $itemIds = $cartItems->pluck('cartItemID')->all();
+
+        try {
+            $orders->place(
+                (int) session('user_id'),
+                (string) session('user_name'),
+                $quantities,
+                (int) $validated['charityID'],
+                $validated['payMethod'],
+                // Runs inside the order transaction: if a double-submitted request already
+                // checked these items out, they are gone and this whole purchase rolls back.
+                function () use ($itemIds) {
+                    $deleted = $this->cartQuery()->whereIn('cartItemID', $itemIds)->delete();
+                    if ($deleted !== count($itemIds)) {
+                        throw new OrderException('These items were already ordered.');
+                    }
+                },
+            );
+        } catch (OrderException $e) {
+            return back()->with('error', $e->getMessage() . ' Please review your cart.');
         }
 
-        $userType = session('user_type');
-        $userID = session('user_id');
-        $charity = Charity::find($validated['charityID']);
-        $charityName = $charity ? $charity->charName : 'charity';
-
-        foreach ($cartItems as $item) {
-            $totalPrice = $item->product->prodPrice * $item->quantity;
-            $sellerAmount = round($totalPrice * 0.85, 2);
-            $platformFee = round($totalPrice * 0.05, 2);
-            $donationAmount = round($totalPrice * 0.10, 2);
-
-            $order = Order::create([
-                'buyerID' => $userID,
-                'artistID' => $item->product->artistID,
-                'productID' => $item->product->productID,
-                'ordQuantity' => $item->quantity,
-                'ordTotalPrice' => $totalPrice,
-                'sellerAmount' => $sellerAmount,
-                'platformFee' => $platformFee,
-                'orderDate' => now(),
-                'ordStatus' => 'pending',
-            ]);
-
-            // Decrement stock and auto-set unavailable if stock reaches 0
-            $newStock = $item->product->prodStock - $item->quantity;
-            $item->product->update([
-                'prodStock' => max($newStock, 0),
-                'prodStatus' => $newStock <= 0 ? 'unavailable' : $item->product->prodStatus,
-            ]);
-
-            Payment::create([
-                'orderID' => $order->orderID,
-                'payAmount' => $totalPrice,
-                'payMethod' => $validated['payMethod'],
-                'payStatus' => 'pending',
-                'datePaid' => null,
-            ]);
-
-            Donation::create([
-                'orderID' => $order->orderID,
-                'charityID' => $validated['charityID'],
-                'amountDonated' => $donationAmount,
-                'dateDonated' => now(),
-            ]);
-
-            // Notify artist
-            Notification::send('order', "New order #{$order->orderID} for {$item->product->prodName} (Qty: {$item->quantity}) — ₱" . number_format($sellerAmount, 2) . " earnings", [
-                'artistID' => $item->product->artistID,
-            ]);
-
-            // Notify admins
-            $adminIds = Admin::pluck('adminID')->toArray();
-            if (!empty($adminIds)) {
-                Notification::send('order', "New order #{$order->orderID} — ₱" . number_format($totalPrice, 2) . " from " . session('user_name'), [
-                    'adminID' => $adminIds,
-                ]);
-            }
-        }
-
-        // Notify buyer about donations
-        $totalDonation = $cartItems->sum(function ($item) {
-            return round($item->product->prodPrice * $item->quantity * 0.10, 2);
-        });
-
-        if ($userType === 'buyer') {
-            Notification::send('donation', "₱" . number_format($totalDonation, 2) . " from your orders was donated to {$charityName}", [
-                'buyerID' => $userID,
-            ]);
-        }
-
-        // Clear only the ordered items from the cart
-        $this->cartQuery()->whereIn('cartItemID', $selectedIds)->delete();
-
-        $redirectRoute = $userType === 'buyer' ? 'buyer.orders' : 'artist.orders';
-        return redirect()->route($redirectRoute)->with('success', 'All items ordered successfully! 10% of your purchase has been donated to charity.');
+        return redirect()->route('buyer.orders')->with('success', 'All items ordered successfully! 10% of your purchase has been donated to charity.');
     }
 }

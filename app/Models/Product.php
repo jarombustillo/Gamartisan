@@ -82,4 +82,12 @@ class Product extends Model
     {
         return $this->prodStatus === 'available';
     }
+
+    /**
+     * Public URL of the product image ($product->image_url), local or bucket.
+     */
+    public function getImageUrlAttribute(): ?string
+    {
+        return \App\Support\ProductImage::url($this->prodImage);
+    }
 }

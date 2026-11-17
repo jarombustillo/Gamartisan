@@ -55,7 +55,7 @@
                             <!-- Product Image -->
                             <a href="{{ route('products.show', $item->product) }}" class="flex-shrink-0">
                                 @if($item->product->prodImage)
-                                    <img src="{{ asset($item->product->prodImage) }}" alt="{{ $item->product->prodName }}" class="w-20 h-20 object-cover rounded-lg">
+                                    <img src="{{ $item->product->image_url }}" alt="{{ $item->product->prodName }}" class="w-20 h-20 object-cover rounded-lg">
                                 @else
                                     <div class="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center">
                                         <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -252,22 +252,72 @@ function updateSelectAll() {
     }
 }
 
-// Save quantities via AJAX silently
-function saveQuantity(row) {
-    const url = row.dataset.updateUrl;
-    const token = row.dataset.token;
-    const qty = parseInt(row.querySelector('.qty-input').value) || 1;
+// Save quantities via AJAX: debounced per row, older in-flight saves are aborted
+// so a slow response can never overwrite a newer quantity.
+const saveTimers = new Map();
+const inflight = new Map();
 
-    fetch(url, {
+function saveQuantity(row) {
+    saveTimers.delete(row);
+    if (inflight.has(row)) inflight.get(row).controller.abort();
+
+    const controller = new AbortController();
+    const qtyInput = row.querySelector('.qty-input');
+    const qty = parseInt(qtyInput.value) || 1;
+
+    const promise = fetch(row.dataset.updateUrl, {
         method: 'POST',
+        signal: controller.signal,
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': token,
+            'X-CSRF-TOKEN': row.dataset.token,
             'Accept': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify({ quantity: qty, _method: 'PUT' })
-    }).catch(() => {});
+    })
+        .then(res => res.ok ? res.json() : Promise.reject(res.status))
+        .then(data => {
+            // Server caps quantity at available stock; reflect that.
+            if (data.quantity && data.quantity !== qty) {
+                qtyInput.value = data.quantity;
+                recalculate();
+                alert('Only ' + data.stock + ' in stock for this item.');
+            }
+        })
+        .catch(err => {
+            if (err && err.name === 'AbortError') return;
+            alert('Could not save the new quantity. Please refresh the page.');
+        })
+        .finally(() => {
+            if (inflight.get(row) && inflight.get(row).controller === controller) inflight.delete(row);
+        });
+
+    inflight.set(row, { controller, promise });
+    return promise;
+}
+
+function scheduleSave(row) {
+    clearTimeout(saveTimers.get(row));
+    saveTimers.set(row, setTimeout(() => saveQuantity(row), 400));
+}
+
+// Before placing the order, push any unsaved quantity changes and wait for them.
+const checkoutForm = document.getElementById('checkout-form');
+if (checkoutForm) {
+    let submitting = false;
+    checkoutForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (submitting) return;
+        submitting = true;
+        const btn = document.getElementById('place-order-btn');
+        btn.disabled = true;
+        btn.classList.add('opacity-60');
+
+        for (const [row, timer] of saveTimers) { clearTimeout(timer); saveQuantity(row); }
+        await Promise.all([...inflight.values()].map(f => f.promise));
+        checkoutForm.submit();
+    });
 }
 
 document.querySelectorAll('.cart-item').forEach(row => {
@@ -280,7 +330,7 @@ document.querySelectorAll('.cart-item').forEach(row => {
         if (val > 1) {
             qtyInput.value = val - 1;
             recalculate();
-            saveQuantity(row);
+            scheduleSave(row);
         }
     });
 
@@ -288,14 +338,14 @@ document.querySelectorAll('.cart-item').forEach(row => {
         let val = parseInt(qtyInput.value) || 1;
         qtyInput.value = val + 1;
         recalculate();
-        saveQuantity(row);
+        scheduleSave(row);
     });
 
     qtyInput.addEventListener('input', () => {
         let val = parseInt(qtyInput.value);
         if (isNaN(val) || val < 1) qtyInput.value = 1;
         recalculate();
-        saveQuantity(row);
+        scheduleSave(row);
     });
 });
 </script>

@@ -48,7 +48,7 @@
                 @if($product->prodImage)
                     <div class="mb-3">
                         <p class="text-xs text-gray-500 mb-2">Current Image:</p>
-                        <img src="{{ asset($product->prodImage) }}" alt="Current product image" class="w-32 h-32 object-cover rounded-lg border border-gray-200">
+                        <img src="{{ $product->image_url }}" alt="Current product image" class="w-32 h-32 object-cover rounded-lg border border-gray-200">
                     </div>
                 @endif
                 <input type="file" id="prodImage" name="prodImage" accept="image/*"

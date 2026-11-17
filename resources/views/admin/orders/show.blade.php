@@ -34,7 +34,7 @@
                 <div class="border border-gray-100 rounded-lg p-4 mb-6">
                     <div class="flex items-center gap-4">
                         @if($order->product && $order->product->prodImage)
-                            <img src="{{ asset($order->product->prodImage) }}" alt="{{ $order->product->prodName }}" class="w-20 h-20 object-cover rounded-lg">
+                            <img src="{{ $order->product->image_url }}" alt="{{ $order->product->prodName }}" class="w-20 h-20 object-cover rounded-lg">
                         @else
                             <div class="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center">
                                 <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>

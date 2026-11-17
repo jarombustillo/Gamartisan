@@ -37,27 +37,20 @@ class Notification extends Model
             'isRead' => false,
         ];
 
-        // If targets has multiple recipients of the same type, create one per recipient
-        // targets format: ['buyerID' => 1, 'artistID' => 2] or arrays
-        if (isset($targets['buyerID'])) {
-            $ids = is_array($targets['buyerID']) ? $targets['buyerID'] : [$targets['buyerID']];
-            foreach ($ids as $id) {
-                self::create(array_merge($base, ['buyerID' => $id]));
+        // One row per recipient, written in a single INSERT.
+        // targets format: ['buyerID' => 1, 'artistID' => 2] or arrays of IDs
+        $rows = [];
+        foreach (['buyerID', 'artistID', 'adminID'] as $column) {
+            if (!isset($targets[$column])) {
+                continue;
+            }
+            foreach ((array) $targets[$column] as $id) {
+                $rows[] = $base + ['buyerID' => null, 'artistID' => null, 'adminID' => null, $column => $id];
             }
         }
 
-        if (isset($targets['artistID'])) {
-            $ids = is_array($targets['artistID']) ? $targets['artistID'] : [$targets['artistID']];
-            foreach ($ids as $id) {
-                self::create(array_merge($base, ['artistID' => $id]));
-            }
-        }
-
-        if (isset($targets['adminID'])) {
-            $ids = is_array($targets['adminID']) ? $targets['adminID'] : [$targets['adminID']];
-            foreach ($ids as $id) {
-                self::create(array_merge($base, ['adminID' => $id]));
-            }
+        if ($rows) {
+            self::insert($rows);
         }
     }
 
