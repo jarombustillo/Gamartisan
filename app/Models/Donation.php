@@ -9,7 +9,7 @@ class Donation extends Model
     /**
      * The table associated with the model.
      */
-    protected $table = 'DONATIONS';
+    protected $table = 'donations';
 
     /**
      * The primary key associated with the table.

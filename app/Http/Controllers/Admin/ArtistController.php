@@ -48,7 +48,7 @@ class ArtistController extends Controller
             'firstName' => 'required|string|max:100',
             'midName' => 'nullable|string|max:100',
             'lastName' => 'required|string|max:100',
-            'email' => 'required|email|unique:ARTISTS,email',
+            'email' => 'required|email|unique:artists,email',
             'artPass' => 'required|string|min:6|confirmed',
             'artBio' => 'nullable|string',
         ]);
@@ -87,7 +87,7 @@ class ArtistController extends Controller
             'firstName' => 'required|string|max:100',
             'midName' => 'nullable|string|max:100',
             'lastName' => 'required|string|max:100',
-            'email' => 'required|email|unique:ARTISTS,email,' . $artist->artistID . ',artistID',
+            'email' => 'required|email|unique:artists,email,' . $artist->artistID . ',artistID',
             'artPass' => 'nullable|string|min:6|confirmed',
             'artBio' => 'nullable|string',
         ]);

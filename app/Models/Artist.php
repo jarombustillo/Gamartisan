@@ -9,7 +9,7 @@ class Artist extends Model
     /**
      * The table associated with the model.
      */
-    protected $table = 'ARTISTS';
+    protected $table = 'artists';
 
     /**
      * The primary key associated with the table.

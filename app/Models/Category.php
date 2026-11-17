@@ -9,7 +9,7 @@ class Category extends Model
     /**
      * The table associated with the model.
      */
-    protected $table = 'CATEGORIES';
+    protected $table = 'categories';
 
     /**
      * The primary key associated with the table.

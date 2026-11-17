@@ -48,7 +48,7 @@ class BuyerController extends Controller
             'firstName' => 'required|string|max:100',
             'midName' => 'nullable|string|max:100',
             'lastName' => 'required|string|max:100',
-            'email' => 'required|email|unique:BUYERS,email',
+            'email' => 'required|email|unique:buyers,email',
             'password' => 'required|string|min:6|confirmed',
         ]);
 
@@ -86,7 +86,7 @@ class BuyerController extends Controller
             'firstName' => 'required|string|max:100',
             'midName' => 'nullable|string|max:100',
             'lastName' => 'required|string|max:100',
-            'email' => 'required|email|unique:BUYERS,email,' . $buyer->buyerID . ',buyerID',
+            'email' => 'required|email|unique:buyers,email,' . $buyer->buyerID . ',buyerID',
             'password' => 'nullable|string|min:6|confirmed',
         ]);
 

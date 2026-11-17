@@ -43,7 +43,7 @@ class AuthController extends Controller
             'firstName' => 'required|string|max:100',
             'midName' => 'nullable|string|max:100',
             'lastName' => 'required|string|max:100',
-            'email' => 'required|email|unique:BUYERS,email',
+            'email' => 'required|email|unique:buyers,email',
             'password' => 'required|string|min:6|confirmed',
         ]);
 
@@ -74,7 +74,7 @@ class AuthController extends Controller
             'firstName' => 'required|string|max:100',
             'midName' => 'nullable|string|max:100',
             'lastName' => 'required|string|max:100',
-            'email' => 'required|email|unique:ARTISTS,email',
+            'email' => 'required|email|unique:artists,email',
             'password' => 'required|string|min:6|confirmed',
             'artBio' => 'nullable|string',
         ]);

@@ -91,7 +91,7 @@ class ArtistDashboardController extends Controller
             'prodDesc' => 'nullable|string',
             'prodPrice' => 'required|numeric|min:0',
             'prodStock' => 'required|integer|min:0',
-            'categoryID' => 'required|exists:CATEGORIES,categoryID',
+            'categoryID' => 'required|exists:categories,categoryID',
             'prodImage' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'prodStatus' => 'required|in:available,unavailable',
         ]);
@@ -152,7 +152,7 @@ class ArtistDashboardController extends Controller
             'prodDesc' => 'nullable|string',
             'prodPrice' => 'required|numeric|min:0',
             'prodStock' => 'required|integer|min:0',
-            'categoryID' => 'required|exists:CATEGORIES,categoryID',
+            'categoryID' => 'required|exists:categories,categoryID',
             'prodImage' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'prodStatus' => 'required|in:available,unavailable',
         ]);
@@ -270,7 +270,7 @@ class ArtistDashboardController extends Controller
             'firstName' => 'required|string|max:100',
             'midName' => 'nullable|string|max:100',
             'lastName' => 'required|string|max:100',
-            'email' => 'required|email|unique:ARTISTS,email,' . $artist->artistID . ',artistID',
+            'email' => 'required|email|unique:artists,email,' . $artist->artistID . ',artistID',
             'artBio' => 'nullable|string',
         ]);
 

@@ -9,7 +9,7 @@ class Product extends Model
     /**
      * The table associated with the model.
      */
-    protected $table = 'PRODUCTS';
+    protected $table = 'products';
 
     /**
      * The primary key associated with the table.

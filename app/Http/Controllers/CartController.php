@@ -136,7 +136,7 @@ class CartController extends Controller
     {
         $validated = $request->validate([
             'payMethod' => 'required|string|in:Cash on Delivery',
-            'charityID' => 'required|exists:CHARITIES,charityID',
+            'charityID' => 'required|exists:charities,charityID',
             'selected_items' => 'required|array|min:1',
             'selected_items.*' => 'integer',
         ]);

@@ -56,8 +56,8 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'artistID' => 'required|exists:ARTISTS,artistID',
-            'categoryID' => 'required|exists:CATEGORIES,categoryID',
+            'artistID' => 'required|exists:artists,artistID',
+            'categoryID' => 'required|exists:categories,categoryID',
             'prodName' => 'required|string|max:100',
             'prodDesc' => 'nullable|string',
             'prodPrice' => 'required|numeric|min:0',
@@ -96,8 +96,8 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         $validated = $request->validate([
-            'artistID' => 'required|exists:ARTISTS,artistID',
-            'categoryID' => 'required|exists:CATEGORIES,categoryID',
+            'artistID' => 'required|exists:artists,artistID',
+            'categoryID' => 'required|exists:categories,categoryID',
             'prodName' => 'required|string|max:100',
             'prodDesc' => 'nullable|string',
             'prodPrice' => 'required|numeric|min:0',

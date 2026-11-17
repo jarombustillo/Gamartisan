@@ -39,7 +39,7 @@ class CheckoutController extends Controller
         $validated = $request->validate([
             'ordQuantity' => 'required|integer|min:1',
             'payMethod' => 'required|string|in:Cash on Delivery',
-            'charityID' => 'required|exists:CHARITIES,charityID',
+            'charityID' => 'required|exists:charities,charityID',
         ]);
 
         // Check stock availability
