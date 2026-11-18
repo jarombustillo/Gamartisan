@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class Notification extends Model
@@ -52,6 +53,28 @@ class Notification extends Model
         if ($rows) {
             self::insert($rows);
         }
+    }
+
+    /**
+     * Notifications for the logged-in user, or null when nobody is logged in.
+     * An artist also gets those sent to their linked buyer profile (their purchases).
+     */
+    public static function forCurrentUser(): ?Builder
+    {
+        $id = session('user_id');
+
+        return match (session('user_type')) {
+            'buyer' => $id ? self::where('buyerID', $id) : null,
+            'admin' => $id ? self::where('adminID', $id) : null,
+            'artist' => $id ? self::where(function ($q) use ($id) {
+                $q->where('artistID', $id);
+                $buyerID = Artist::whereKey($id)->value('buyerID');
+                if ($buyerID) {
+                    $q->orWhere('buyerID', $buyerID);
+                }
+            }) : null,
+            default => null,
+        };
     }
 
     public function buyer()

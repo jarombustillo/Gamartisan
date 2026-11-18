@@ -12,15 +12,11 @@ class NotificationController extends Controller
      */
     private function mine()
     {
-        $column = [
-            'buyer' => 'buyerID',
-            'artist' => 'artistID',
-            'admin' => 'adminID',
-        ][session('user_type')] ?? null;
+        $query = Notification::forCurrentUser();
 
-        abort_unless($column && session('user_id'), 403);
+        abort_unless($query, 403);
 
-        return Notification::where($column, session('user_id'));
+        return $query;
     }
 
     /**

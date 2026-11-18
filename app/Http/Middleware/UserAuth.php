@@ -14,16 +14,16 @@ class UserAuth
      * Handle an incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     * @param  string  $type  The user type required (buyer or artist)
+     * @param  string  ...$types  The user types allowed (buyer, artist); none means any
      */
-    public function handle(Request $request, Closure $next, string $type = null): Response
+    public function handle(Request $request, Closure $next, string ...$types): Response
     {
         if (!session('user_type') || !session('user_id')) {
             return redirect()->route('login')->with('error', 'Please login to continue.');
         }
 
-        // If specific type required, check it
-        if ($type && session('user_type') !== $type) {
+        // If specific types are required, check them
+        if ($types && !in_array(session('user_type'), $types, true)) {
             return redirect()->route(session('user_type') . '.dashboard')
                 ->with('error', 'You do not have access to that area.');
         }

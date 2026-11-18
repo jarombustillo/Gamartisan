@@ -325,4 +325,21 @@ class ArtistDashboardController extends Controller
         return view('artist.reviews', compact('artist', 'reviews'));
     }
 
+    /**
+     * Orders this artist placed as a customer (filed under their buyer profile).
+     */
+    public function purchases(Request $request)
+    {
+        $artist = $this->getArtist();
+        $query = \App\Models\Order::where('buyerID', $artist->buyerID ?? 0)->with(['product', 'artist']);
+
+        if ($request->status) {
+            $query->where('ordStatus', $request->status);
+        }
+
+        $orders = $query->orderBy('orderDate', 'desc')->paginate(10);
+
+        return view('artist.purchases', compact('artist', 'orders'));
+    }
+
 }

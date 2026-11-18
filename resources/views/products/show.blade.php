@@ -74,8 +74,13 @@
                     </div>
                 </div>
 
-                <!-- Buy / Cart Buttons -->
-                @if(session('user_type') === 'buyer')
+                <!-- Buy / Cart Buttons (buyers and sellers; sellers can't buy their own) -->
+                @php $isOwnProduct = session('user_type') === 'artist' && (int) $product->artistID === (int) session('user_id'); @endphp
+                @if($isOwnProduct)
+                    <a href="{{ route('artist.products.edit', $product) }}" class="block w-full text-center border-2 border-ochre text-ochre py-4 rounded-xl font-semibold text-lg hover:bg-ochre hover:text-white transition-colors">
+                        This is your product — Edit Listing
+                    </a>
+                @elseif(in_array(session('user_type'), ['buyer', 'artist'], true))
                     @if($product->prodStock > 0)
                         <div class="flex gap-3">
                             <form action="{{ route('cart.add', $product) }}" method="POST" class="flex-1">

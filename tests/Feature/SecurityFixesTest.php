@@ -165,17 +165,106 @@ class SecurityFixesTest extends TestCase
         $this->assertSame(2, CartItem::count());
     }
 
-    // ---- 2. Only buyers can buy or review -----------------------------------
+    // ---- 2. Who can buy: buyers and sellers (not their own items), not admins --
 
-    public function test_artist_cannot_checkout_or_use_cart(): void
+    private function otherArtistsProduct(int $stock = 5): Product
+    {
+        $other = Artist::create(['firstName' => 'Olga', 'lastName' => 'Other', 'email' => 'olga@example.test', 'artPass' => Hash::make('secret123'), 'status' => 'active']);
+
+        return Product::create([
+            'artistID' => $other->artistID, 'categoryID' => $this->category->categoryID,
+            'prodName' => 'Bowl', 'prodPrice' => 100, 'prodStock' => $stock, 'prodStatus' => 'available',
+        ]);
+    }
+
+    public function test_artist_can_buy_another_artists_product_under_a_linked_buyer_profile(): void
+    {
+        $product = $this->otherArtistsProduct();
+
+        $this->asArtist()->checkout($product)->assertRedirect(route('artist.purchases'));
+        $this->asArtist()->checkout($product, token: str_repeat('b', 40))->assertRedirect(route('artist.purchases'));
+
+        $this->artist->refresh();
+        $this->assertNotNull($this->artist->buyerID);
+        // Both orders reuse the same profile, and it is not the unrelated buyer with the same ID.
+        $this->assertSame(2, Order::where('buyerID', $this->artist->buyerID)->count());
+        $this->assertSame(0, Order::where('buyerID', $this->buyer->buyerID)->count());
+        $this->assertSame('art@example.test', $this->artist->buyerProfile->email);
+        $this->assertSame(3, $product->fresh()->prodStock);
+
+        $this->asArtist()->get(route('artist.purchases'))->assertOk()->assertSee('Bowl');
+    }
+
+    public function test_artist_buyer_profile_does_not_take_over_an_existing_buyer_with_same_email(): void
+    {
+        $this->artist->update(['email' => 'bea@example.test']);
+
+        $this->asArtist()->checkout($this->otherArtistsProduct())->assertRedirect(route('artist.purchases'));
+
+        $this->artist->refresh();
+        $this->assertNotSame($this->buyer->buyerID, $this->artist->buyerID);
+        $this->assertSame(0, Order::where('buyerID', $this->buyer->buyerID)->count());
+    }
+
+    public function test_artist_can_use_cart_and_check_out(): void
+    {
+        $product = $this->otherArtistsProduct();
+
+        $this->asArtist()->post(route('cart.add', $product))->assertSessionHas('success');
+        $item = CartItem::firstOrFail();
+        $this->assertSame('artist', $item->userType);
+
+        $this->asArtist()->post(route('cart.checkout'), [
+            'payMethod' => 'Cash on Delivery',
+            'charityID' => $this->charity->charityID,
+            'selected_items' => [$item->cartItemID],
+        ])->assertRedirect(route('artist.purchases'));
+
+        $this->assertSame(1, Order::where('buyerID', $this->artist->fresh()->buyerID)->count());
+        $this->assertSame(0, CartItem::count());
+    }
+
+    public function test_artist_cannot_buy_own_product(): void
     {
         $product = $this->product();
 
-        $this->asArtist()->checkout($product)->assertRedirect(route('artist.dashboard'));
-        $this->asArtist()->post(route('cart.add', $product))->assertRedirect(route('artist.dashboard'));
+        $this->asArtist()->get(route('checkout', $product))->assertRedirect(route('products.show', $product));
+        $this->asArtist()->checkout($product)->assertRedirect(route('products.show', $product));
+        $this->asArtist()->post(route('cart.add', $product))->assertSessionHas('error');
+
+        // Even if one is already in the cart (e.g. added before this rule), checkout refuses it.
+        $item = CartItem::create(['userID' => $this->artist->artistID, 'userType' => 'artist', 'productID' => $product->productID, 'quantity' => 1]);
+        $this->asArtist()->post(route('cart.checkout'), [
+            'payMethod' => 'Cash on Delivery',
+            'charityID' => $this->charity->charityID,
+            'selected_items' => [$item->cartItemID],
+        ])->assertSessionHas('error');
 
         $this->assertSame(0, Order::count());
-        $this->assertSame(0, CartItem::count());
+        $this->assertSame(5, $product->fresh()->prodStock);
+    }
+
+    public function test_artist_sees_status_updates_for_own_purchases(): void
+    {
+        $this->asArtist()->checkout($this->otherArtistsProduct());
+        $buyerID = $this->artist->fresh()->buyerID;
+
+        Notification::send('order_status', 'Your order was shipped', ['buyerID' => $buyerID]);
+        Notification::send('order_status', 'Someone else\'s order', ['buyerID' => $this->buyer->buyerID]);
+
+        $this->asArtist()->get(route('artist.dashboard'))
+            ->assertSee('Your order was shipped')
+            ->assertDontSee('Someone else&#039;s order', false);
+
+        $this->asArtist()->post(route('artist.notifications.readAll'));
+        $this->assertSame(0, Notification::where('buyerID', $buyerID)->where('isRead', false)->count());
+        $this->assertSame(1, Notification::where('buyerID', $this->buyer->buyerID)->where('isRead', false)->count());
+    }
+
+    public function test_artist_cannot_post_reviews(): void
+    {
+        $this->asArtist()->post(route('reviews.store', $this->otherArtistsProduct()), ['rating' => 5])
+            ->assertRedirect(route('artist.dashboard'));
     }
 
     public function test_admin_cannot_checkout(): void

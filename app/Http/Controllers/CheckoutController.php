@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\PurchasesAsCurrentUser;
 use App\Models\Charity;
 use App\Models\Product;
 use App\Services\OrderException;
@@ -12,11 +13,18 @@ use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
 {
+    use PurchasesAsCurrentUser;
+
     /**
      * Show the checkout page for a product.
      */
     public function show(Product $product)
     {
+        if ($this->isOwnProduct($product)) {
+            return redirect()->route('products.show', $product)
+                ->with('error', 'You cannot buy your own product.');
+        }
+
         if ($product->prodStatus !== 'available' || $product->prodStock <= 0) {
             return redirect()->route('products.show', $product)
                 ->with('error', 'This product is currently out of stock.');
@@ -42,14 +50,19 @@ class CheckoutController extends Controller
             'checkout_token' => 'required|string|size:40',
         ]);
 
+        if ($this->isOwnProduct($product)) {
+            return redirect()->route('products.show', $product)
+                ->with('error', 'You cannot buy your own product.');
+        }
+
         // Cache::add is atomic: only the first request with this token gets through.
         if (!Cache::add('checkout-token:' . $validated['checkout_token'], true, now()->addHour())) {
-            return redirect()->route('buyer.orders')->with('success', 'Your order was already placed.');
+            return redirect()->route($this->purchasesRoute())->with('success', 'Your order was already placed.');
         }
 
         try {
             $orders->place(
-                (int) session('user_id'),
+                $this->purchaserBuyerID(),
                 (string) session('user_name'),
                 [$product->productID => (int) $validated['ordQuantity']],
                 (int) $validated['charityID'],
@@ -60,6 +73,6 @@ class CheckoutController extends Controller
             return back()->withInput()->with('error', $e->getMessage());
         }
 
-        return redirect()->route('buyer.orders')->with('success', 'Order placed successfully! 10% of your purchase has been donated to charity, and 5% supports the Gamartisan platform.');
+        return redirect()->route($this->purchasesRoute())->with('success', 'Order placed successfully! 10% of your purchase has been donated to charity, and 5% supports the Gamartisan platform.');
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\PurchasesAsCurrentUser;
 use App\Models\CartItem;
 use App\Models\Charity;
 use App\Models\Product;
@@ -12,6 +13,8 @@ use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
+    use PurchasesAsCurrentUser;
+
     /**
      * Get current user's cart query.
      */
@@ -53,6 +56,10 @@ class CartController extends Controller
      */
     public function add(Request $request, Product $product)
     {
+        if ($this->isOwnProduct($product)) {
+            return $this->respond($request, false, 'You cannot buy your own product.');
+        }
+
         if ($product->prodStatus !== 'available' || $product->prodStock <= 0) {
             return $this->respond($request, false, 'This product is out of stock.');
         }
@@ -130,10 +137,14 @@ class CartController extends Controller
         ]);
 
         $selectedIds = array_values(array_unique(array_map('intval', $validated['selected_items'])));
-        $cartItems = $this->cartQuery()->whereIn('cartItemID', $selectedIds)->get();
+        $cartItems = $this->cartQuery()->whereIn('cartItemID', $selectedIds)->with('product')->get();
 
         if ($cartItems->isEmpty()) {
             return back()->with('error', 'Please select at least one item.');
+        }
+
+        if ($cartItems->contains(fn ($item) => $item->product && $this->isOwnProduct($item->product))) {
+            return back()->with('error', 'You cannot buy your own product. Please remove it from your cart.');
         }
 
         $quantities = [];
@@ -144,7 +155,7 @@ class CartController extends Controller
 
         try {
             $orders->place(
-                (int) session('user_id'),
+                $this->purchaserBuyerID(),
                 (string) session('user_name'),
                 $quantities,
                 (int) $validated['charityID'],
@@ -162,6 +173,6 @@ class CartController extends Controller
             return back()->with('error', $e->getMessage() . ' Please review your cart.');
         }
 
-        return redirect()->route('buyer.orders')->with('success', 'All items ordered successfully! 10% of your purchase has been donated to charity.');
+        return redirect()->route($this->purchasesRoute())->with('success', 'All items ordered successfully! 10% of your purchase has been donated to charity.');
     }
 }
