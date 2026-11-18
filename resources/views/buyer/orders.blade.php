@@ -45,7 +45,7 @@
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
                                     @if($order->product && $order->product->prodImage)
-                                        <img src="{{ asset($order->product->prodImage) }}" alt="" class="w-10 h-10 rounded-lg object-cover">
+                                        <img src="{{ $order->product->image_url }}" alt="" class="w-10 h-10 rounded-lg object-cover">
                                     @else
                                         <div class="w-10 h-10 bg-gray-100 rounded-lg"></div>
                                     @endif

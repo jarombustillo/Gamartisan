@@ -16,6 +16,13 @@
             </div>
         @endif
 
+        @if($categories->isEmpty())
+            <div class="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-lg mb-6 text-sm">
+                <strong>No categories yet.</strong> Every product needs a category, and only an admin can add them.
+                Please ask the Gamartisan admin to create categories, then come back to add your product.
+            </div>
+        @endif
+
         <form action="{{ route('artist.products.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
 

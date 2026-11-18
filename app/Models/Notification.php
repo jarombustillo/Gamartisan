@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class Notification extends Model
 {
-    protected $table = 'NOTIFICATIONS';
+    protected $table = 'notifications';
     protected $primaryKey = 'notificationID';
     public $timestamps = false;
 
@@ -37,28 +38,43 @@ class Notification extends Model
             'isRead' => false,
         ];
 
-        // If targets has multiple recipients of the same type, create one per recipient
-        // targets format: ['buyerID' => 1, 'artistID' => 2] or arrays
-        if (isset($targets['buyerID'])) {
-            $ids = is_array($targets['buyerID']) ? $targets['buyerID'] : [$targets['buyerID']];
-            foreach ($ids as $id) {
-                self::create(array_merge($base, ['buyerID' => $id]));
+        // One row per recipient, written in a single INSERT.
+        // targets format: ['buyerID' => 1, 'artistID' => 2] or arrays of IDs
+        $rows = [];
+        foreach (['buyerID', 'artistID', 'adminID'] as $column) {
+            if (!isset($targets[$column])) {
+                continue;
+            }
+            foreach ((array) $targets[$column] as $id) {
+                $rows[] = $base + ['buyerID' => null, 'artistID' => null, 'adminID' => null, $column => $id];
             }
         }
 
-        if (isset($targets['artistID'])) {
-            $ids = is_array($targets['artistID']) ? $targets['artistID'] : [$targets['artistID']];
-            foreach ($ids as $id) {
-                self::create(array_merge($base, ['artistID' => $id]));
-            }
+        if ($rows) {
+            self::insert($rows);
         }
+    }
 
-        if (isset($targets['adminID'])) {
-            $ids = is_array($targets['adminID']) ? $targets['adminID'] : [$targets['adminID']];
-            foreach ($ids as $id) {
-                self::create(array_merge($base, ['adminID' => $id]));
-            }
-        }
+    /**
+     * Notifications for the logged-in user, or null when nobody is logged in.
+     * An artist also gets those sent to their linked buyer profile (their purchases).
+     */
+    public static function forCurrentUser(): ?Builder
+    {
+        $id = session('user_id');
+
+        return match (session('user_type')) {
+            'buyer' => $id ? self::where('buyerID', $id) : null,
+            'admin' => $id ? self::where('adminID', $id) : null,
+            'artist' => $id ? self::where(function ($q) use ($id) {
+                $q->where('artistID', $id);
+                $buyerID = Artist::whereKey($id)->value('buyerID');
+                if ($buyerID) {
+                    $q->orWhere('buyerID', $buyerID);
+                }
+            }) : null,
+            default => null,
+        };
     }
 
     public function buyer()

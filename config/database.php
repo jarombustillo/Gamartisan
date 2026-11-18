@@ -24,4 +24,7 @@ return [
             ]) : [],
         ],
     ],
+
+    // Table that records which migrations have run (required by `php artisan migrate`).
+    'migrations' => 'migrations',
 ];

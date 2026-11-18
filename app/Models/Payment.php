@@ -9,7 +9,7 @@ class Payment extends Model
     /**
      * The table associated with the model.
      */
-    protected $table = 'PAYMENTS';
+    protected $table = 'payments';
 
     /**
      * The primary key associated with the table.

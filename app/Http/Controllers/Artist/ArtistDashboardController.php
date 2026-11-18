@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\Admin;
 use App\Models\Notification;
 use App\Models\Review;
+use App\Support\ProductImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -91,7 +92,7 @@ class ArtistDashboardController extends Controller
             'prodDesc' => 'nullable|string',
             'prodPrice' => 'required|numeric|min:0',
             'prodStock' => 'required|integer|min:0',
-            'categoryID' => 'required|exists:CATEGORIES,categoryID',
+            'categoryID' => 'required|exists:categories,categoryID',
             'prodImage' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'prodStatus' => 'required|in:available,unavailable',
         ]);
@@ -107,10 +108,7 @@ class ArtistDashboardController extends Controller
 
         // Handle image upload
         if ($request->hasFile('prodImage')) {
-            $image = $request->file('prodImage');
-            $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('uploads/products'), $filename);
-            $validated['prodImage'] = '/uploads/products/' . $filename;
+            $validated['prodImage'] = ProductImage::store($request->file('prodImage'));
         } else {
             unset($validated['prodImage']);
         }
@@ -152,7 +150,7 @@ class ArtistDashboardController extends Controller
             'prodDesc' => 'nullable|string',
             'prodPrice' => 'required|numeric|min:0',
             'prodStock' => 'required|integer|min:0',
-            'categoryID' => 'required|exists:CATEGORIES,categoryID',
+            'categoryID' => 'required|exists:categories,categoryID',
             'prodImage' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'prodStatus' => 'required|in:available,unavailable',
         ]);
@@ -166,15 +164,9 @@ class ArtistDashboardController extends Controller
 
         // Handle image upload
         if ($request->hasFile('prodImage')) {
-            // Delete old image if exists
-            if ($product->prodImage && file_exists(public_path($product->prodImage))) {
-                unlink(public_path($product->prodImage));
-            }
-            
-            $image = $request->file('prodImage');
-            $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('uploads/products'), $filename);
-            $validated['prodImage'] = '/uploads/products/' . $filename;
+            $oldImage = $product->prodImage;
+            $validated['prodImage'] = ProductImage::store($request->file('prodImage'));
+            ProductImage::delete($oldImage);
         } else {
             unset($validated['prodImage']);
         }
@@ -270,7 +262,7 @@ class ArtistDashboardController extends Controller
             'firstName' => 'required|string|max:100',
             'midName' => 'nullable|string|max:100',
             'lastName' => 'required|string|max:100',
-            'email' => 'required|email|unique:ARTISTS,email,' . $artist->artistID . ',artistID',
+            'email' => 'required|email|unique:artists,email,' . $artist->artistID . ',artistID',
             'artBio' => 'nullable|string',
         ]);
 
@@ -331,6 +323,23 @@ class ArtistDashboardController extends Controller
         })->with(['product', 'buyer'])->orderBy('datePosted', 'desc')->paginate(15);
 
         return view('artist.reviews', compact('artist', 'reviews'));
+    }
+
+    /**
+     * Orders this artist placed as a customer (filed under their buyer profile).
+     */
+    public function purchases(Request $request)
+    {
+        $artist = $this->getArtist();
+        $query = \App\Models\Order::where('buyerID', $artist->buyerID ?? 0)->with(['product', 'artist']);
+
+        if ($request->status) {
+            $query->where('ordStatus', $request->status);
+        }
+
+        $orders = $query->orderBy('orderDate', 'desc')->paginate(10);
+
+        return view('artist.purchases', compact('artist', 'orders'));
     }
 
 }

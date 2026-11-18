@@ -143,6 +143,16 @@
                     <span class="sidebar-text">Orders</span>
                     <span class="sidebar-tooltip">Orders</span>
                 </a>
+                <a href="{{ route('artist.purchases') }}" class="sidebar-link flex items-center gap-3 px-3 py-3 rounded-lg text-gray-700 hover:bg-ochre/10 hover:text-ochre transition-colors {{ request()->routeIs('artist.purchases') ? 'bg-ochre/10 text-ochre border-r-4 border-ochre' : '' }}">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                    <span class="sidebar-text">My Purchases</span>
+                    <span class="sidebar-tooltip">My Purchases</span>
+                </a>
+                <a href="{{ route('cart.index') }}" class="sidebar-link flex items-center gap-3 px-3 py-3 rounded-lg text-gray-700 hover:bg-ochre/10 hover:text-ochre transition-colors">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"></path></svg>
+                    <span class="sidebar-text">My Cart</span>
+                    <span class="sidebar-tooltip">My Cart</span>
+                </a>
                 <a href="{{ route('artist.profile') }}" class="sidebar-link flex items-center gap-3 px-3 py-3 rounded-lg text-gray-700 hover:bg-ochre/10 hover:text-ochre transition-colors {{ request()->routeIs('artist.profile') ? 'bg-ochre/10 text-ochre border-r-4 border-ochre' : '' }}">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                     <span class="sidebar-text">Profile</span>

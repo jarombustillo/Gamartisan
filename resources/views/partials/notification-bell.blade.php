@@ -8,16 +8,17 @@
     $rolePrefix = '';
 
     if ($role === 'buyer') {
-        $notifications = Notification::where('buyerID', $userId)->orderBy('dateSent', 'desc')->take(10)->get();
-        $unreadCount = Notification::where('buyerID', $userId)->where('isRead', false)->count();
+        $notifications = Notification::forCurrentUser()->orderBy('dateSent', 'desc')->take(10)->get();
+        $unreadCount = Notification::forCurrentUser()->where('isRead', false)->count();
         $rolePrefix = 'buyer';
     } elseif ($role === 'artist') {
-        $notifications = Notification::where('artistID', $userId)->orderBy('dateSent', 'desc')->take(10)->get();
-        $unreadCount = Notification::where('artistID', $userId)->where('isRead', false)->count();
+        // Includes updates on the artist's own purchases (sent to their buyer profile).
+        $notifications = Notification::forCurrentUser()->orderBy('dateSent', 'desc')->take(10)->get();
+        $unreadCount = Notification::forCurrentUser()->where('isRead', false)->count();
         $rolePrefix = 'artist';
     } elseif ($role === 'admin') {
-        $notifications = Notification::where('adminID', $userId)->orderBy('dateSent', 'desc')->take(10)->get();
-        $unreadCount = Notification::where('adminID', $userId)->where('isRead', false)->count();
+        $notifications = Notification::forCurrentUser()->orderBy('dateSent', 'desc')->take(10)->get();
+        $unreadCount = Notification::forCurrentUser()->where('isRead', false)->count();
         $rolePrefix = 'admin';
     }
 @endphp

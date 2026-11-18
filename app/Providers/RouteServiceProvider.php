@@ -28,6 +28,21 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
 
+        // Password guessing: 5 tries a minute per account+IP, 20 a minute per IP.
+        RateLimiter::for('login', function (Request $request) {
+            $account = strtolower((string) $request->input('email'));
+
+            return [
+                Limit::perMinute(5)->by($account . '|' . $request->ip()),
+                Limit::perMinute(20)->by($request->ip()),
+            ];
+        });
+
+        // Account sign-ups: 10 an hour per IP.
+        RateLimiter::for('register', function (Request $request) {
+            return Limit::perHour(10)->by($request->ip());
+        });
+
         $this->routes(function () {
             Route::middleware('api')
                 ->prefix('api')

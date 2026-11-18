@@ -9,7 +9,7 @@ class Buyer extends Model
     /**
      * The table associated with the model.
      */
-    protected $table = 'BUYERS';
+    protected $table = 'buyers';
 
     /**
      * The primary key associated with the table.

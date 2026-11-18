@@ -9,7 +9,7 @@ class Order extends Model
     /**
      * The table associated with the model.
      */
-    protected $table = 'ORDERS';
+    protected $table = 'orders';
 
     /**
      * The primary key associated with the table.

@@ -97,7 +97,7 @@
                                 <a href="{{ route('products.show', $product) }}" class="block">
                                     @if($product->prodImage)
                                         <div class="relative overflow-hidden">
-                                            <img src="{{ asset($product->prodImage) }}" alt="{{ $product->prodName }}" 
+                                            <img src="{{ $product->image_url }}" alt="{{ $product->prodName }}" 
                                                 class="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300">
                                             <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
                                         </div>
@@ -126,7 +126,7 @@
                                     </p>
                                     <div class="flex items-center justify-between">
                                         <span class="text-xl font-bold text-forest">₱{{ number_format($product->prodPrice, 2) }}</span>
-                                        @if(session('user_type') === 'buyer' || session('user_type') === 'artist')
+                                        @if(session('user_type') === 'buyer' || (session('user_type') === 'artist' && (int) $product->artistID !== (int) session('user_id')))
                                             <button type="button" class="add-to-cart-btn px-4 py-2 bg-forest text-white text-sm rounded-lg hover:bg-forest-dark transition-colors flex items-center gap-1"
                                                 data-url="{{ route('cart.add', $product) }}" data-token="{{ csrf_token() }}">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"></path></svg>

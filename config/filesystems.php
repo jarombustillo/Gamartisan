@@ -10,6 +10,10 @@ return [
 
     'default' => env('FILESYSTEM_DISK', 'local'),
 
+    // Where product images are stored (see App\Support\ProductImage).
+    // Use "s3" on Laravel Cloud: its local disk is reset on every deploy.
+    'uploads_disk' => env('UPLOADS_DISK', 'uploads'),
+
     /*
     |--------------------------------------------------------------------------
     | Filesystem Disks
@@ -30,6 +34,14 @@ return [
             'url' => env('APP_URL').'/storage',
             'visibility' => 'public',
             'throw' => false,
+        ],
+
+        'uploads' => [
+            'driver' => 'local',
+            'root' => public_path('uploads'),
+            'url' => env('APP_URL').'/uploads',
+            'visibility' => 'public',
+            'throw' => true,
         ],
 
         's3' => [

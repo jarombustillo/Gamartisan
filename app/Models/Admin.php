@@ -9,7 +9,7 @@ class Admin extends Authenticatable
     /**
      * The table associated with the model.
      */
-    protected $table = 'ADMIN';
+    protected $table = 'admin';
 
     /**
      * The primary key associated with the table.

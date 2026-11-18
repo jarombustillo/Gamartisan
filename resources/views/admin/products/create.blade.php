@@ -32,6 +32,11 @@
                         @endforeach
                     </select>
                     @error('categoryID')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                    @if($categories->isEmpty())
+                        <p class="mt-1 text-sm text-amber-700">
+                            No categories yet. <a href="{{ route('admin.categories.create') }}" class="underline font-medium">Create a category</a> first.
+                        </p>
+                    @endif
                 </div>
             </div>
             <div>

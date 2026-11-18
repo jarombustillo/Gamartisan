@@ -9,7 +9,7 @@ class Report extends Model
     /**
      * The table associated with the model.
      */
-    protected $table = 'REPORTS';
+    protected $table = 'reports';
 
     /**
      * The primary key associated with the table.

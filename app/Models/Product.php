@@ -9,7 +9,7 @@ class Product extends Model
     /**
      * The table associated with the model.
      */
-    protected $table = 'PRODUCTS';
+    protected $table = 'products';
 
     /**
      * The primary key associated with the table.
@@ -81,5 +81,13 @@ class Product extends Model
     public function isAvailable()
     {
         return $this->prodStatus === 'available';
+    }
+
+    /**
+     * Public URL of the product image ($product->image_url), local or bucket.
+     */
+    public function getImageUrlAttribute(): ?string
+    {
+        return \App\Support\ProductImage::url($this->prodImage);
     }
 }

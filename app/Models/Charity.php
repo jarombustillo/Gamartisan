@@ -9,7 +9,7 @@ class Charity extends Model
     /**
      * The table associated with the model.
      */
-    protected $table = 'CHARITIES';
+    protected $table = 'charities';
 
     /**
      * The primary key associated with the table.

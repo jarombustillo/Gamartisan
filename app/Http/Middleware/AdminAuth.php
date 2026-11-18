@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Admin;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,8 +16,9 @@ class AdminAuth
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Check both the new unified session and legacy admin_id for backward compatibility
-        if (!session('admin_id') && session('user_type') !== 'admin') {
+        // Both keys must agree: a buyer/artist session must never pass as admin.
+        $adminId = session('admin_id');
+        if (session('user_type') !== 'admin' || !$adminId || !Admin::whereKey($adminId)->exists()) {
             return redirect()->route('login')->with('error', 'Please login as admin to access the admin panel.');
         }
 

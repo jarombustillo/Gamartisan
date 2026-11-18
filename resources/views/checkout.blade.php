@@ -17,8 +17,10 @@
             </div>
         @endif
 
-        <form action="{{ route('checkout.store', $product) }}" method="POST">
+        <form action="{{ route('checkout.store', $product) }}" method="POST"
+              onsubmit="const b=this.querySelector('[type=submit]'); if (b.disabled) return false; b.disabled=true; b.classList.add('opacity-60');">
             @csrf
+            <input type="hidden" name="checkout_token" value="{{ $checkoutToken }}">
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Order Form -->
@@ -28,7 +30,7 @@
                         <h3 class="text-lg font-semibold text-gray-800 mb-4">Product</h3>
                         <div class="flex items-center gap-4">
                             @if($product->prodImage)
-                                <img src="{{ asset($product->prodImage) }}" alt="{{ $product->prodName }}" class="w-20 h-20 object-cover rounded-lg">
+                                <img src="{{ $product->image_url }}" alt="{{ $product->prodName }}" class="w-20 h-20 object-cover rounded-lg">
                             @else
                                 <div class="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center">
                                     <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>

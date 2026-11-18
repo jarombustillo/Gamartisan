@@ -47,8 +47,8 @@
                     <!-- Logged in as Artist -->
                     <a href="{{ route('products') }}" class="nav-link text-gray-600 hover:text-forest-dark font-medium">Products</a>
                     <a href="{{ route('artist.dashboard') }}" class="nav-link text-ochre hover:text-ochre/80 font-medium">Artist Dashboard</a>
-                    <!-- Cart Icon -->
-                    <a href="{{ route('cart.index') }}" class="relative text-gray-600 hover:text-ochre transition-colors">
+                    <!-- Cart Icon (sellers can buy too) -->
+                    <a href="{{ route('cart.index') }}" class="relative text-gray-600 hover:text-forest-dark transition-colors">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"></path></svg>
                         @php $cartCount = \App\Models\CartItem::where('userID', session('user_id'))->where('userType', 'artist')->count(); @endphp
                         @if($cartCount > 0)
@@ -66,6 +66,7 @@
                         <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                             <a href="{{ route('artist.dashboard') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">Dashboard</a>
                             <a href="{{ route('artist.products') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">My Products</a>
+                            <a href="{{ route('artist.purchases') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">My Purchases</a>
                             <a href="{{ route('artist.profile') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">Profile</a>
                             <form action="{{ route('logout') }}" method="POST">
                                 @csrf

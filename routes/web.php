@@ -37,10 +37,15 @@ Route::get('/products/{product}', [HomeController::class, 'showProduct'])->name(
 // Checkout Routes (Buyer or Artist)
 use App\Http\Controllers\CartController;
 
-Route::middleware('user.auth')->group(function () {
+Route::middleware('user.auth:buyer')->group(function () {
+    Route::post('/products/{product}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+});
+
+// Buyers and sellers can shop. An artist's orders are filed under their linked
+// buyer profile (orders.buyerID references the buyers table), never their artistID.
+Route::middleware('user.auth:buyer,artist')->group(function () {
     Route::get('/checkout/{product}', [CheckoutController::class, 'show'])->name('checkout');
     Route::post('/checkout/{product}', [CheckoutController::class, 'store'])->name('checkout.store');
-    Route::post('/products/{product}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
 
     // Cart
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
@@ -55,10 +60,10 @@ Route::middleware('user.auth')->group(function () {
 Route::get('/join', [AuthController::class, 'join'])->name('join');
 Route::get('/register/buyer', [AuthController::class, 'registerBuyer'])->name('register.buyer');
 Route::get('/register/seller', [AuthController::class, 'registerSeller'])->name('register.seller');
-Route::post('/register/buyer', [AuthController::class, 'storeBuyer'])->name('register.buyer.store');
-Route::post('/register/seller', [AuthController::class, 'storeSeller'])->name('register.seller.store');
+Route::post('/register/buyer', [AuthController::class, 'storeBuyer'])->name('register.buyer.store')->middleware('throttle:register');
+Route::post('/register/seller', [AuthController::class, 'storeSeller'])->name('register.seller.store')->middleware('throttle:register');
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->name('login.store');
+Route::post('/login', [AuthController::class, 'login'])->name('login.store')->middleware('throttle:login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Admin Routes
@@ -142,6 +147,7 @@ Route::prefix('artist')->name('artist.')->middleware('user.auth:artist')->group(
     Route::put('/password', [ArtistDashboardController::class, 'updatePassword'])->name('password.update');
     Route::get('/transactions', [ArtistDashboardController::class, 'transactions'])->name('transactions');
     Route::get('/reviews', [ArtistDashboardController::class, 'reviews'])->name('reviews');
+    Route::get('/purchases', [ArtistDashboardController::class, 'purchases'])->name('purchases');
 
     // Notifications
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
